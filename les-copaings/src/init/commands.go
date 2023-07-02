@@ -29,8 +29,8 @@ func Command(client *discordgo.Session) {
 			return
 		}
 		registeredCommands[i] = cmd
-		utils.SendSucces("[COMMAND] : " + v.Name + " initialized")
+		utils.SendSuccess("[COMMAND] : " + v.Name + " initialized")
 		o += 1
 	}
-	utils.SendSucces("[Recaps] " + strconv.Itoa(o) + "/" + strconv.Itoa(len(commands)) + " commands has been loaded")
+	utils.SendSuccess("[Recaps] " + strconv.Itoa(o) + "/" + strconv.Itoa(len(commands)) + " commands has been loaded")
 }

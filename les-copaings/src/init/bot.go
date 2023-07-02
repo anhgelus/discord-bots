@@ -20,7 +20,7 @@ func Bot(token string) {
 		utils.SendAlert(err.Error())
 	}
 
-	utils.SendSucces("Bot started")
+	utils.SendSuccess("Bot started")
 	Command(dg)
 	CommandHandlers(dg)
 	dg.AddHandler(event.ReactionAdd)

@@ -1,0 +1,11 @@
+[SQL]
+Host = "localhost"
+User = "postgres"
+Password = "postgres"
+DBName = "les-copaings"
+Port = "5432"
+
+[Redis]
+Address = "localhost:6379"
+Password = ""
+DB = 0
