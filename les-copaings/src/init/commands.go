@@ -18,6 +18,10 @@ func init() {
 		Description: "Obtenez votre avatar",
 	})
 	commands = append(commands, &discordgo.ApplicationCommand{
+		Name:        "top",
+		Description: "Obtenez le top du serveur",
+	})
+	commands = append(commands, &discordgo.ApplicationCommand{
 		Name:        "rank",
 		Description: "Obtenez votre rang",
 		Options: []*discordgo.ApplicationCommandOption{

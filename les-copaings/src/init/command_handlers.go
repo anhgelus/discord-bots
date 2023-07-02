@@ -16,6 +16,9 @@ var (
 		"rank": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			cmds.Rank(s, i)
 		},
+		"top": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			cmds.Top(s, i)
+		},
 	}
 )
 
