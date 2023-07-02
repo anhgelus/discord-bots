@@ -39,7 +39,7 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	oldLvl := xp.CalcLevel(copaing.XP)
 	copaing.XP += exp
 	if oldLvl != xp.CalcLevel(copaing.XP) {
-		// handle level up on vocal
+		//TODO: handle level up on vocal
 	}
 	result = sql.DB.Save(&copaing)
 	if result.Error != nil {

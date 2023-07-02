@@ -1,3 +1,5 @@
+ResetEach = 1
+
 [SQL]
 Host = "localhost"
 User = "postgres"

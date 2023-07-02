@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func Bot(token string) {
+func Bot(token string, resetEach uint) {
 	dg, err := discordgo.New("Bot " + token) // Define connection to discord API with bot token
 	if err != nil {
 		utils.SendAlert(err.Error())
@@ -30,6 +30,8 @@ func Bot(token string) {
 	dg.AddHandler(event.MessageSent)
 	dg.AddHandler(event.ConnectionVocal)
 	dg.AddHandler(event.DisconnectionVocal)
+
+	SetupTimers(resetEach, dg)
 
 	dg.Identify.Intents = discordgo.IntentMessageContent | discordgo.IntentsMessageContent | discordgo.IntentGuildMembers | discordgo.IntentGuildMessages
 
