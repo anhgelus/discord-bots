@@ -40,11 +40,15 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	var msg string
+	level := xp.CalcLevel(copaing.XP)
+	nextLvlXp := xp.CalcXpForLevel(level + 1)
 	if hasOption {
-		msg = fmt.Sprintf("Le niveau de %s : **%d** (expérience : %d)", user.Username, xp.CalcLevel(copaing.XP), copaing.XP)
+		msg = fmt.Sprintf("Le niveau de %s", user.Username)
 	} else {
-		msg = fmt.Sprintf("Votre niveau : **%d** (expérience : %d)", xp.CalcLevel(copaing.XP), copaing.XP)
+		msg = "Votre niveau"
 	}
+	msg = fmt.Sprintf("%s : **%d**\n> XP : %d\n> Prochain niveau dans %d XP",
+		msg, level, copaing.XP, nextLvlXp-copaing.XP)
 	err := respondInteraction(client, i, msg)
 	if err != nil {
 		utils.SendAlert(err.Error())
