@@ -22,7 +22,14 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		utils.SendAlert(result.Error.Error())
 		return
 	}
+	oldLvl := xp.CalcLevel(copaing.XP)
 	copaing.XP += exp
+	if oldLvl != xp.CalcLevel(copaing.XP) {
+		err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
+		if err != nil {
+			utils.SendAlert(err.Error())
+		}
+	}
 	result = sql.DB.Save(&copaing)
 	if result.Error != nil {
 		utils.SendAlert(result.Error.Error())
