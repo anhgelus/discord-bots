@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./temp/config.toml:/app/config.toml
+  postgres:
+    image: postgres:alpine
+    env_file:
+      - .env
+  redis:
+    image: redis:alpine

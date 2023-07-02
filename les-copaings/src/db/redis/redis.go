@@ -1,6 +1,9 @@
 package redis
 
-import "github.com/redis/go-redis/v9"
+import (
+	"context"
+	"github.com/redis/go-redis/v9"
+)
 
 type RedisCredentials struct {
 	Address  string
@@ -10,10 +13,14 @@ type RedisCredentials struct {
 
 var Credentials RedisCredentials
 
-func (rc *RedisCredentials) GetClient() *redis.Client {
-	return redis.NewClient(&redis.Options{
+var Ctx = context.Background()
+
+func (rc *RedisCredentials) GetClient() (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
 		Addr:     rc.Address,
 		Password: rc.Password,
 		DB:       rc.DB,
 	})
+	err := client.Ping(Ctx).Err()
+	return client, err
 }

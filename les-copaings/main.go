@@ -22,12 +22,13 @@ type Config struct {
 func main() {
 	c, err := os.ReadFile("config.toml")
 	if err != nil {
-		utils.SendAlert("Error during reading the file, creating a new one")
+		utils.SendAlert("Error during reading the file, creating a new one.")
 		err = os.WriteFile("config.toml", []byte(defaultConfig), 0666)
 		if err != nil {
 			utils.SendError(err)
 			return
 		}
+		return
 	}
 	var cfg Config
 	err = toml.Unmarshal(c, &cfg)
@@ -40,6 +41,12 @@ func main() {
 		utils.SendError(fmt.Errorf("the database is nil"))
 		return
 	}
+	client, err := cfg.Redis.GetClient()
+	if err != nil {
+		utils.SendError(err)
+		return
+	}
+	client.Close()
 	redis.Credentials = cfg.Redis
 	start.Bot(os.Args[1])
 }
