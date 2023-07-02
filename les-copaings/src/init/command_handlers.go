@@ -1,17 +1,20 @@
 package start
 
 import (
-	handlers "github.com/anhgelus/discord-bots/les-copaings/src/commands"
+	cmds "github.com/anhgelus/discord-bots/les-copaings/src/commands"
 	"github.com/bwmarrin/discordgo"
 )
 
 var (
 	commandsHandler = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		"ping": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			handlers.Ping(s, i)
+			cmds.Ping(s, i)
 		},
 		"avatar": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			handlers.Avatar(s, i)
+			cmds.Avatar(s, i)
+		},
+		"rank": func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			cmds.Rank(s, i)
 		},
 	}
 )

@@ -1,4 +1,4 @@
-package handlers
+package commands
 
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
@@ -6,12 +6,7 @@ import (
 )
 
 func Ping(client *discordgo.Session, i *discordgo.InteractionCreate) {
-	err := client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Response gived everythings seems fine here",
-		},
-	})
+	err := respondInteraction(client, i, "Pong !")
 	if err != nil {
 		utils.SendAlert(err.Error())
 	}

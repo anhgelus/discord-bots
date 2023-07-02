@@ -1,4 +1,4 @@
-package handlers
+package commands
 
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
