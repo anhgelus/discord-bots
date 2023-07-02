@@ -1,6 +1,7 @@
 package start
 
 import (
+	"fmt"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/bwmarrin/discordgo"
 	"strconv"
@@ -23,8 +24,8 @@ func Command(client *discordgo.Session) {
 			return
 		}
 		registeredCommands[i] = cmd
-		utils.SendSuccess("[COMMAND] : " + v.Name + " initialized")
+		utils.SendSuccess(fmt.Sprintf("[COMMAND] : %s initialized", v.Name))
 		o += 1
 	}
-	utils.SendSuccess("[Recaps] " + strconv.Itoa(o) + "/" + strconv.Itoa(len(cmds)) + " commands has been loaded")
+	utils.SendSuccess(fmt.Sprintf("[Recaps] %d/%d commands has been loaded", strconv.Itoa(o), strconv.Itoa(len(cmds))))
 }
