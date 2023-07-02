@@ -8,4 +8,4 @@ RUN go mod tidy && go build -o app .
 
 ENV TOKEN = ""
 
-CMD ./app $TOKEN
+CMD sleep 2 && ./app $TOKEN

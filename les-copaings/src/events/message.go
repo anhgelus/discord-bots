@@ -8,6 +8,9 @@ import (
 )
 
 func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
+	if event.Author.Bot {
+		return
+	}
 	content := event.Message.Content
 	exp := xp.CalcExperience(calcPower(content))
 	_, err := client.ChannelMessageSend(event.ChannelID, fmt.Sprintf("XP gained: %d", exp))
