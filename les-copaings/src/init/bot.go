@@ -1,6 +1,7 @@
 package start
 
 import (
+	cmd "github.com/anhgelus/discord-bots/les-copaings/src/commands"
 	event "github.com/anhgelus/discord-bots/les-copaings/src/events"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/bwmarrin/discordgo"
@@ -21,6 +22,8 @@ func Bot(token string) {
 	}
 
 	utils.SendSuccess("Bot started")
+	initCommands()
+	utils.SendSuccess("Command generated")
 	Command(dg)
 	CommandHandlers(dg)
 	dg.AddHandler(event.ReactionAdd)
@@ -36,4 +39,40 @@ func Bot(token string) {
 	if err != nil {
 		utils.SendAlert(err.Error())
 	}
+}
+
+func initCommands() {
+	cmds = append(cmds, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "ping",
+			Description: "Juste un ping",
+		},
+		Handler: cmd.Ping,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "avatar",
+			Description: "Obtenez votre avatar",
+		},
+		Handler: cmd.Avatar,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "top",
+			Description: "Obtenez le top du serveur",
+		},
+		Handler: cmd.Top,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "rank",
+			Description: "Obtenez votre rang",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "membre",
+					Description: "Le rang du membre que vous souhaitez obtenir",
+					Required:    false,
+				},
+			},
+		},
+		Handler: cmd.Rank,
+	})
 }
