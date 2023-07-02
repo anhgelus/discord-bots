@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type Copaing struct {
 	gorm.Model
-	UserID string
-	XP     uint
+	UserID  string `gorm:"not null"`
+	GuildID string `gorm:"not null"`
+	XP      uint   `gorm:"default:0"`
 }

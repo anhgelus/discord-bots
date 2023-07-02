@@ -41,6 +41,11 @@ func main() {
 		utils.SendError(fmt.Errorf("the database is nil"))
 		return
 	}
+	err = sql.DB.AutoMigrate(&sql.Copaing{})
+	if err != nil {
+		utils.SendError(err)
+		return
+	}
 	client, err := cfg.Redis.GetClient()
 	if err != nil {
 		utils.SendError(err)
