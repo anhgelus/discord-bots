@@ -32,7 +32,7 @@ func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 					Footer: &discordgo.MessageEmbedFooter{
 						Text: "© 2023 - Les Copaings",
 					},
-					Color:     0x10E6AD,
+					Color:     utils.Success,
 					Timestamp: time.Now().Format(time.RFC3339),
 				},
 			},
