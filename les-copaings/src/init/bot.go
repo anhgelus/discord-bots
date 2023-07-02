@@ -28,6 +28,8 @@ func Bot(token string) {
 	CommandHandlers(dg)
 	dg.AddHandler(event.ReactionAdd)
 	dg.AddHandler(event.MessageSent)
+	dg.AddHandler(event.ConnectionVocal)
+	dg.AddHandler(event.DisconnectionVocal)
 
 	dg.Identify.Intents = discordgo.IntentMessageContent | discordgo.IntentsMessageContent | discordgo.IntentGuildMembers | discordgo.IntentGuildMessages
 
