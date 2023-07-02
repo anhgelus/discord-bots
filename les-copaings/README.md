@@ -13,3 +13,4 @@ Bot for the private server Discord "Les Copaings"
 - Go 1.19
 - GORM
 - go-redis
+- pelletier/go-toml
