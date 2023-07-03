@@ -9,11 +9,7 @@ import (
 )
 
 func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
-	options := i.ApplicationCommandData().Options
-	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
-	for _, opt := range options {
-		optionMap[opt.Name] = opt
-	}
+	optionMap := generateOptionMap(i)
 
 	var hasOption bool
 	var user *discordgo.User

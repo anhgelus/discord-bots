@@ -29,7 +29,7 @@ SendDebug
 Send input strings as ANSI color code for console
 As debug the color is ??.
 */
-func SendDebug(message any) {
+func SendDebug(message ...any) {
 	color := "\033[34m"
 	fmt.Println(color, message, reset)
 }

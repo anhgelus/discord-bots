@@ -9,7 +9,7 @@ services:
       - redis
       - postgres
     volumes:
-      - ./temp/config.toml:/app/config.toml
+      - ./temp:/config
   postgres:
     image: postgres:alpine
     env_file:

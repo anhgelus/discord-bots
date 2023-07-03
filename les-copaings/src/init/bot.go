@@ -33,7 +33,9 @@ func Bot(token string, resetEach uint) {
 
 	SetupTimers(resetEach, dg)
 
-	dg.Identify.Intents = discordgo.IntentMessageContent | discordgo.IntentsMessageContent | discordgo.IntentGuildMembers | discordgo.IntentGuildMessages
+	dg.Identify.Intents = discordgo.IntentsAll
+
+	dg.StateEnabled = true
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
@@ -78,5 +80,19 @@ func initCommands() {
 			},
 		},
 		Handler: cmd.Rank,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "purge",
+			Description: "Purgez les membres",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "whitelist",
+					Description: "Les rôles que vous souhaitez garder (forme : `ID,ID,ID`)",
+					Required:    true,
+				},
+			},
+		},
+		Handler: cmd.Purge,
 	})
 }

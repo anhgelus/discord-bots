@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/bwmarrin/discordgo"
-	"strconv"
 )
 
 type Cmd struct {
@@ -27,5 +26,5 @@ func Command(client *discordgo.Session) {
 		utils.SendSuccess(fmt.Sprintf("[COMMAND] : %s initialized", v.Name))
 		o += 1
 	}
-	utils.SendSuccess(fmt.Sprintf("[Recaps] %d/%d commands has been loaded", strconv.Itoa(o), strconv.Itoa(len(cmds))))
+	utils.SendSuccess(fmt.Sprintf("[Recaps] %d/%d commands has been loaded", o, len(cmds)))
 }

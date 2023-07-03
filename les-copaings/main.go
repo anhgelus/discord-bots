@@ -21,10 +21,10 @@ type Config struct {
 }
 
 func main() {
-	c, err := os.ReadFile("config.toml")
+	c, err := os.ReadFile("/config/config.toml")
 	if err != nil {
 		utils.SendAlert("Error during reading the file, creating a new one.")
-		err = os.WriteFile("config.toml", []byte(defaultConfig), 0666)
+		err = os.WriteFile("/config/config.toml", []byte(defaultConfig), 0666)
 		if err != nil {
 			utils.SendError(err)
 			return
