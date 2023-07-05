@@ -85,7 +85,6 @@ func sortMembers(guild *discordgo.Guild, members []*discordgo.Member, whitelist 
 				continue
 			}
 			if utils.AStringContains(whitelist, r) {
-				utils.SendDebug("remove", member.User.Username)
 				did = true
 			}
 		}

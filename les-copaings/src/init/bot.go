@@ -4,6 +4,7 @@ import (
 	"fmt"
 	cmd "github.com/anhgelus/discord-bots/les-copaings/src/commands"
 	event "github.com/anhgelus/discord-bots/les-copaings/src/events"
+	"github.com/anhgelus/discord-bots/les-copaings/src/timers"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/bwmarrin/discordgo"
 	"os"
@@ -36,8 +37,10 @@ func Bot(token string, resetEach uint) {
 	dg.AddHandler(event.MessageSent)
 	dg.AddHandler(event.ConnectionVocal)
 	dg.AddHandler(event.DisconnectionVocal)
+	dg.AddHandler(event.GuildCreate)
+	dg.AddHandler(event.GuildDelete)
 
-	SetupTimers(resetEach, dg)
+	timers.SetupTimers(resetEach, dg)
 
 	dg.Identify.Intents = discordgo.IntentsAll
 

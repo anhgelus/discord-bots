@@ -1,6 +1,8 @@
 package sql
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Copaing struct {
 	gorm.Model
@@ -20,4 +22,9 @@ type XpRole struct {
 	XP       uint
 	Role     string
 	ConfigID uint
+}
+
+func (cfg *Config) BeforeDelete(tx *gorm.DB) (err error) {
+	DB.Model(XpRole{}).Where("config_id = ?", cfg.ID).Delete(XpRole{})
+	return
 }

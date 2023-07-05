@@ -1,4 +1,4 @@
-package start
+package timers
 
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
@@ -14,7 +14,7 @@ import (
 const LastResetKey = "guild_id:last_reset"
 
 func SetupTimers(interval uint, s *discordgo.Session) {
-	utils.NewTimers(1*time.Hour, func(_ chan struct{}) {
+	utils.NewTimers(1*time.Minute, func(_ chan struct{}) {
 		checkReset(interval, s)
 	})
 }
@@ -30,17 +30,17 @@ func checkReset(interval uint, s *discordgo.Session) {
 func checkGuilds(guilds []*discordgo.Guild, interval uint, s *discordgo.Session) {
 	client, _ := redis.Credentials.GetClient()
 	for _, guild := range guilds {
-		val := client.Get(redis.Ctx, genLastResetKey(guild.ID))
+		val := client.Get(redis.Ctx, GenLastResetKey(guild.ID))
 		if val.Err() == rdb.Nil {
-			initialize(guild.ID, client)
+			InitializeGuild(guild.ID, client)
 			continue
 		} else if val.Err() != nil {
-			utils.SendAlert("timers.go - Get last key", val.Err().Error())
+			utils.SendAlert("reset.go - Get last key", val.Err().Error())
 			continue
 		}
 		last, err := strconv.Atoi(val.Val())
 		if err != nil {
-			utils.SendAlert("timers.go - Str to Int conversion", err.Error())
+			utils.SendAlert("reset.go - Str to Int conversion", err.Error())
 			continue
 		}
 		if time.Now().Unix() >= int64(last+intervalToUnix(interval)) {
@@ -49,26 +49,26 @@ func checkGuilds(guilds []*discordgo.Guild, interval uint, s *discordgo.Session)
 	}
 }
 
-func genLastResetKey(guildID string) string {
+func GenLastResetKey(guildID string) string {
 	return strings.Replace(LastResetKey, "guild_id", guildID, -1)
 }
 
-func initialize(guildID string, client *rdb.Client) {
-	client.Set(redis.Ctx, genLastResetKey(guildID), time.Now().Unix(), 0)
+func InitializeGuild(guildID string, client *rdb.Client) {
+	client.Set(redis.Ctx, GenLastResetKey(guildID), time.Now().Unix(), 0)
 }
 
 func reset(s *discordgo.Session) {
 	guilds, err := s.UserGuilds(0, "", "")
 	if err != nil {
-		utils.SendAlert("timers.go - Guilds", err.Error())
+		utils.SendAlert("reset.go - Guilds", err.Error())
 		return
 	}
 	for _, guild := range guilds {
-		resetGuild(guild)
+		ResetGuild(guild)
 	}
 }
 
-func resetGuild(guild *discordgo.UserGuild) {
+func ResetGuild(guild *discordgo.UserGuild) {
 	//TODO: send message to broadcast the reset when config will be implemented
 	//TODO: reset roles when roles will be implemented
 
