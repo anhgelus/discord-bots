@@ -7,9 +7,11 @@ import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/timers"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/bwmarrin/discordgo"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func Bot(token string, resetEach uint) {
@@ -22,9 +24,27 @@ func Bot(token string, resetEach uint) {
 	if err != nil {
 		utils.SendAlert("bot.go - Start", err.Error())
 	}
-	dg.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		utils.SendSuccess(fmt.Sprintf("Bot started as %s", s.State.User.Username))
-	})
+	go func() {
+		time.Sleep(30 * time.Second)
+		utils.SendSuccess(fmt.Sprintf("Bot started as %s", dg.State.User.Username))
+		utils.NewTimers(30*time.Second, func(_ chan struct{}) {
+			rand.NewSource(time.Now().Unix())
+			r := rand.Intn(3)
+			switch r {
+			case 0:
+			case 1:
+				err = dg.UpdateWatchStatus(0, "Les Copaings")
+				if err != nil {
+					utils.SendAlert("bot.go - Update status", err.Error())
+				}
+			case 2:
+				err = dg.UpdateGameStatus(0, "Dev by @anhgelus")
+				if err != nil {
+					utils.SendAlert("bot.go - Update status", err.Error())
+				}
+			}
+		})
+	}()
 
 	initCommands()
 	utils.SendSuccess("Commands generated")
@@ -102,6 +122,7 @@ func initCommands() {
 					Required:    true,
 				},
 			},
+			DefaultMemberPermissions: &adminPerm,
 		},
 		Handler: cmd.Purge,
 	}, Cmd{

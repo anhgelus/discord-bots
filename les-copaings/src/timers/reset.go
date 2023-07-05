@@ -1,6 +1,7 @@
 package timers
 
 import (
+	"fmt"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
@@ -44,7 +45,7 @@ func checkGuilds(s *discordgo.Session, guilds []*discordgo.Guild, interval uint)
 			continue
 		}
 		if time.Now().Unix() >= int64(last+intervalToUnix(interval)) {
-			ResetGuild(s, guild)
+			ResetGuild(s, guild, interval)
 		}
 	}
 }
@@ -57,13 +58,13 @@ func InitializeGuild(guildID string, client *rdb.Client) {
 	client.Set(redis.Ctx, GenLastResetKey(guildID), time.Now().Unix(), 0)
 }
 
-func ResetGuild(s *discordgo.Session, guild *discordgo.Guild) {
+func ResetGuild(s *discordgo.Session, guild *discordgo.Guild, interval uint) {
 	// reset the xp of all members
 	sql.DB.Model(sql.Copaing{}).Where("guild_id = ?", guild.ID).Updates(sql.Copaing{XP: 0})
 
 	// reset roles
 	cfg := sql.Config{GuildID: guild.ID}
-	sql.DB.FirstOrCreate(&cfg)
+	sql.DB.Preload("XpRoles").FirstOrCreate(&cfg)
 	members := utils.FetchGuildUser(s, guild.ID)
 	for _, member := range members {
 		for _, role := range member.Roles {
@@ -79,5 +80,12 @@ func ResetGuild(s *discordgo.Session, guild *discordgo.Guild) {
 		}
 	}
 
-	//TODO: broadcast this news
+	msg := fmt.Sprintf("Le système de niveau vient d'être reset !\nProchain reset le <t:%d:F>",
+		time.Now().Unix()+int64(intervalToUnix(interval)),
+	)
+
+	_, err := s.ChannelMessageSend(cfg.BroadcastChannel, msg)
+	if err != nil {
+		utils.SendAlert("reset.go - Broadcast reset", err.Error())
+	}
 }
