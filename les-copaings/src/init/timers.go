@@ -41,7 +41,7 @@ func checkReset(interval uint, s *discordgo.Session) {
 	}
 	last, err := strconv.Atoi(val.Val())
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("timers.go - Str to Int conversion", err.Error())
 		return
 	}
 	if time.Now().Unix() >= int64(last+intervalToUnix(interval)) {
@@ -56,7 +56,7 @@ func initialize(s *discordgo.Session, client *rdb.Client) {
 func reset(s *discordgo.Session) {
 	guilds, err := s.UserGuilds(0, "", "")
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("timers.go - Guilds", err.Error())
 		return
 	}
 	for _, guild := range guilds {

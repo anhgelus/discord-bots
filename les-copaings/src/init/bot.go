@@ -13,12 +13,12 @@ import (
 func Bot(token string, resetEach uint) {
 	dg, err := discordgo.New("Bot " + token) // Define connection to discord API with bot token
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("bot.go - Token", err.Error())
 	}
 
 	err = dg.Open() // Bot start
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("bot.go - Start", err.Error())
 	}
 
 	utils.SendSuccess("Bot started")
@@ -43,11 +43,12 @@ func Bot(token string, resetEach uint) {
 
 	err = dg.Close() // Bot Shutown
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("bot.go - Shutdown", err.Error())
 	}
 }
 
 func initCommands() {
+	var adminPerm int64 = discordgo.PermissionManageServer
 	cmds = append(cmds, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "ping",
@@ -94,5 +95,44 @@ func initCommands() {
 			},
 		},
 		Handler: cmd.Purge,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "config",
+			Description: "Mise à jour de la configuration",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "id",
+					Description: "ID à mettre à jour",
+					Required:    true,
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{
+							Name:  "Rôles liés à l'XP",
+							Value: "xp-roles",
+						},
+					},
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "valeur",
+					Description: "Nouvelle valeur",
+					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "arg1",
+					Description: "Argument 1",
+					Required:    false,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "arg2",
+					Description: "Argument 2",
+					Required:    false,
+				},
+			},
+			DefaultMemberPermissions: &adminPerm,
+		},
+		Handler: cmd.Config,
 	})
 }

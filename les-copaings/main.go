@@ -23,7 +23,7 @@ type Config struct {
 func main() {
 	c, err := os.ReadFile("/config/config.toml")
 	if err != nil {
-		utils.SendAlert("Error during reading the file, creating a new one.")
+		utils.SendAlert("main.go - Create file", "Error during reading the file, creating a new one.")
 		err = os.WriteFile("/config/config.toml", []byte(defaultConfig), 0666)
 		if err != nil {
 			utils.SendError(err)
@@ -42,7 +42,7 @@ func main() {
 		utils.SendError(fmt.Errorf("the database is nil"))
 		return
 	}
-	err = sql.DB.AutoMigrate(&sql.Copaing{})
+	err = sql.DB.AutoMigrate(&sql.Copaing{}, &sql.Config{}, &sql.XpRole{})
 	if err != nil {
 		utils.SendError(err)
 		return

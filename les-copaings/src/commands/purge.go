@@ -21,24 +21,24 @@ func Purge(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	} else {
 		err := respondEphemeralInteraction(client, i, "L'argument whitelist n'a pas été renseigné")
 		if err != nil {
-			utils.SendAlert(err.Error())
+			utils.SendAlert("purge.go - Respond interaction whitelist", err.Error())
 		}
 		return
 	}
 
 	err := client.RequestGuildMembers(i.GuildID, "", 0, "", false)
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("purge.go - Failed to request guild members", err.Error())
 		return
 	}
 	guild, err := client.State.Guild(i.GuildID)
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("purge.go - Failed to the guild", err.Error())
 		return
 	}
 	members, err := client.GuildMembers(i.GuildID, "", 0)
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("purge.go - Failed to get guild members", err.Error())
 		return
 	}
 	toRemove := members
@@ -76,7 +76,7 @@ func Purge(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	err = respondEphemeralInteraction(client, i, msg[:len(msg)-2])
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("purge.go - Respond interaction", err.Error())
 	}
 }
 

@@ -19,8 +19,8 @@ func Command(client *discordgo.Session) {
 	for i, v := range cmds {
 		cmd, err := client.ApplicationCommandCreate(client.State.User.ID, "", &v.ApplicationCommand)
 		if err != nil {
-			utils.SendAlert(err.Error())
-			return
+			utils.SendAlert("commands.go - Create application command", err.Error())
+			continue
 		}
 		registeredCommands[i] = cmd
 		utils.SendSuccess(fmt.Sprintf("[COMMAND] : %s initialized", v.Name))

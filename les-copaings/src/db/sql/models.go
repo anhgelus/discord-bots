@@ -8,3 +8,16 @@ type Copaing struct {
 	GuildID string `gorm:"not null"`
 	XP      uint   `gorm:"default:0"`
 }
+
+type Config struct {
+	gorm.Model
+	GuildID string `gorm:"not null"`
+	XpRoles []XpRole
+}
+
+type XpRole struct {
+	gorm.Model
+	XP       uint
+	Role     string
+	ConfigID uint
+}

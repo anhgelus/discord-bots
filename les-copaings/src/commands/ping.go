@@ -8,6 +8,6 @@ import (
 func Ping(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := respondInteraction(client, i, "Pong !")
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("ping.go - Respond interaction", err.Error())
 	}
 }

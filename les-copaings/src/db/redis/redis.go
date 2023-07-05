@@ -90,7 +90,7 @@ func (user *ConnectedUser) GenerateTimeConnected() {
 	connectAtStr := client.Get(Ctx, genKey(user.GuildID, user.UserID, "connect_at"))
 	connectAt, err := strconv.Atoi(connectAtStr.Val())
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("redis.go - Str to Int Conversion", err.Error())
 		return
 	}
 	user.TimeConnected = CalcTime(uint(connectAt))

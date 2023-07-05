@@ -20,6 +20,6 @@ func Avatar(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("avatar.go - Interaction respond", err.Error())
 	}
 }

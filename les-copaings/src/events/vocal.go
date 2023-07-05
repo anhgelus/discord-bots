@@ -33,7 +33,7 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	copaing := sql.Copaing{UserID: event.UserID, GuildID: event.GuildID}
 	result := sql.DB.FirstOrCreate(&copaing, copaing)
 	if result.Error != nil {
-		utils.SendAlert(result.Error.Error())
+		utils.SendAlert("vocal.go - Querying/Creating copaing", result.Error.Error())
 		return
 	}
 	oldLvl := xp.CalcLevel(copaing.XP)
@@ -43,7 +43,7 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	}
 	result = sql.DB.Save(&copaing)
 	if result.Error != nil {
-		utils.SendAlert(result.Error.Error())
+		utils.SendAlert("vocal.go - Save copaing", result.Error.Error())
 		return
 	}
 }

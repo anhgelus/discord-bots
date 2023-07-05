@@ -39,9 +39,9 @@ SendAlert
 Send input strings as ANSI color code for console
 As warning the color is red.
 */
-func SendAlert(message string) {
+func SendAlert(pos string, message string) {
 	color := "\033[31m" // red color in ANSI
-	fmt.Println(color, message, reset)
+	fmt.Printf("[%s] %s%s%s\n", pos, color, message, reset)
 }
 
 func SendError(err error) {

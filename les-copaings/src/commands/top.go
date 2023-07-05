@@ -16,7 +16,7 @@ func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	for i, top := range tops {
 		user, err := client.User(top.UserID)
 		if err != nil {
-			utils.SendAlert(err.Error())
+			utils.SendAlert("top.go - Failed to get user", err.Error())
 			return
 		}
 		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, user.Username, xp.CalcLevel(top.XP))
@@ -39,6 +39,6 @@ func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 	})
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("top.go - Respond interaction", err.Error())
 	}
 }

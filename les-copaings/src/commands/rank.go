@@ -20,7 +20,7 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		if user.Bot {
 			err := respondInteraction(client, i, "Les bots n'ont pas de niveau !")
 			if err != nil {
-				utils.SendAlert(err.Error())
+				utils.SendAlert("rank.go - Respond interaction bot xp", err.Error())
 			}
 			return
 		}
@@ -31,7 +31,7 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	result := sql.DB.FirstOrCreate(&copaing, copaing)
 	if result.Error != nil {
-		utils.SendAlert(result.Error.Error())
+		utils.SendAlert("rank.go - Querying or creating copaing", result.Error.Error())
 		return
 	}
 
@@ -47,6 +47,6 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		msg, level, copaing.XP, nextLvlXp-copaing.XP)
 	err := respondInteraction(client, i, msg)
 	if err != nil {
-		utils.SendAlert(err.Error())
+		utils.SendAlert("rank.go - Respond interaction", err.Error())
 	}
 }
