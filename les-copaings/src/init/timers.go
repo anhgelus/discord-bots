@@ -7,25 +7,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 	rdb "github.com/redis/go-redis/v9"
 	"strconv"
+	"strings"
 	"time"
 )
 
-const LastResetKey = "last_reset"
+const LastResetKey = "guild_id:last_reset"
 
 func SetupTimers(interval uint, s *discordgo.Session) {
-	ticker := time.NewTicker(1 * time.Hour)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				checkReset(interval, s)
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
+	utils.NewTimers(1*time.Hour, func(_ chan struct{}) {
+		checkReset(interval, s)
+	})
 }
 
 func intervalToUnix(interval uint) int {
@@ -33,24 +24,37 @@ func intervalToUnix(interval uint) int {
 }
 
 func checkReset(interval uint, s *discordgo.Session) {
+	checkGuilds(s.State.Guilds, interval, s)
+}
+
+func checkGuilds(guilds []*discordgo.Guild, interval uint, s *discordgo.Session) {
 	client, _ := redis.Credentials.GetClient()
-	val := client.Get(redis.Ctx, LastResetKey)
-	if val.Err() == rdb.Nil {
-		initialize(s, client)
-		return
-	}
-	last, err := strconv.Atoi(val.Val())
-	if err != nil {
-		utils.SendAlert("timers.go - Str to Int conversion", err.Error())
-		return
-	}
-	if time.Now().Unix() >= int64(last+intervalToUnix(interval)) {
-		reset(s)
+	for _, guild := range guilds {
+		val := client.Get(redis.Ctx, genLastResetKey(guild.ID))
+		if val.Err() == rdb.Nil {
+			initialize(guild.ID, client)
+			continue
+		} else if val.Err() != nil {
+			utils.SendAlert("timers.go - Get last key", val.Err().Error())
+			continue
+		}
+		last, err := strconv.Atoi(val.Val())
+		if err != nil {
+			utils.SendAlert("timers.go - Str to Int conversion", err.Error())
+			continue
+		}
+		if time.Now().Unix() >= int64(last+intervalToUnix(interval)) {
+			reset(s)
+		}
 	}
 }
 
-func initialize(s *discordgo.Session, client *rdb.Client) {
-	client.Set(redis.Ctx, LastResetKey, time.Now().Unix(), 0)
+func genLastResetKey(guildID string) string {
+	return strings.Replace(LastResetKey, "guild_id", guildID, -1)
+}
+
+func initialize(guildID string, client *rdb.Client) {
+	client.Set(redis.Ctx, genLastResetKey(guildID), time.Now().Unix(), 0)
 }
 
 func reset(s *discordgo.Session) {
