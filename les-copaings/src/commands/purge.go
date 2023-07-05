@@ -6,7 +6,9 @@ import (
 	"strings"
 )
 
-func Purge(client *discordgo.Session, i *discordgo.InteractionCreate) {
+var removed = 0
+
+func Purge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := generateOptionMap(i)
 
 	var exclude []string
@@ -19,34 +21,62 @@ func Purge(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			exclude[i] = strings.Trim(e, " ")
 		}
 	} else {
-		err := respondEphemeralInteraction(client, i, "L'argument whitelist n'a pas été renseigné")
+		err := respondEphemeralInteraction(s, i, "L'argument whitelist n'a pas été renseigné")
 		if err != nil {
 			utils.SendAlert("purge.go - Respond interaction whitelist", err.Error())
 		}
 		return
 	}
 
-	err := client.RequestGuildMembers(i.GuildID, "", 0, "", false)
-	if err != nil {
-		utils.SendAlert("purge.go - Failed to request guild members", err.Error())
-		return
-	}
-	guild, err := client.State.Guild(i.GuildID)
+	guild, err := s.State.Guild(i.GuildID)
 	if err != nil {
 		utils.SendAlert("purge.go - Failed to the guild", err.Error())
 		return
 	}
-	members, err := client.GuildMembers(i.GuildID, "", 0)
-	if err != nil {
-		utils.SendAlert("purge.go - Failed to get guild members", err.Error())
+	members := utils.FetchGuildUser(s, i.GuildID)
+	if len(members) == 0 {
+		utils.SendAlert("purge.go - Fetch members", "they are no members")
 		return
 	}
-	toRemove := members
+	err = respondLoadingInteraction(s, i, "Je m'en occupe !")
+	if err != nil {
+		utils.SendAlert("purge.go - Failed to send loading", err.Error())
+		return
+	}
+
+	c := make(chan *discordgo.Member)
+
+	go sortMembers(guild, members, exclude, c)
+
+	msg := ""
+	for rm := range c {
+		if msg == "" {
+			msg = "Membres purgés : "
+		}
+		err = s.GuildMemberDeleteWithReason(i.GuildID, rm.User.ID, "Purge")
+		if err != nil {
+			msg += rm.User.Username + "(not purged see the console), "
+			utils.SendAlert("purge.go - Purging users", err.Error())
+			continue
+		}
+		msg += rm.User.Username + ", "
+	}
+	if msg == "" {
+		msg = "Aucun membre purgé  "
+	}
+	content := msg[:len(msg)-2]
+	_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Content: &content,
+	})
+	if err != nil {
+		utils.SendAlert("purge.go - Respond interaction", err.Error())
+	}
+}
+
+func sortMembers(guild *discordgo.Guild, members []*discordgo.Member, whitelist []string, c chan *discordgo.Member) {
 	ownID := guild.OwnerID
-	for id, member := range members {
-		utils.SendDebug("for each", member.User.Username, id)
+	for _, member := range members {
 		if member.User.Bot || member.User.ID == ownID {
-			toRemove = removeMember(toRemove, member, id)
 			continue
 		}
 		did := false
@@ -54,37 +84,14 @@ func Purge(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			if did {
 				continue
 			}
-			if utils.AStringContains(exclude, r) {
+			if utils.AStringContains(whitelist, r) {
 				utils.SendDebug("remove", member.User.Username)
-				toRemove = removeMember(toRemove, member, id)
 				did = true
 			}
 		}
+		if !did {
+			c <- member
+		}
 	}
-	msg := ""
-	for _, rm := range toRemove {
-		//err = client.GuildMemberDeleteWithReason(i.GuildID, rm.User.ID, "Purge")
-		//if err != nil {
-		//	msg += rm.User.Username + "(not purged see the console), "
-		//	utils.SendAlert(err.Error())
-		//	continue
-		//}
-		msg += rm.User.Username + ", "
-	}
-	if msg == "" {
-		msg = "Aucun membre purgé  "
-	}
-	err = respondEphemeralInteraction(client, i, msg[:len(msg)-2])
-	if err != nil {
-		utils.SendAlert("purge.go - Respond interaction", err.Error())
-	}
-}
-
-func removeMember(arr []*discordgo.Member, member *discordgo.Member, id int) []*discordgo.Member {
-	if id == len(arr)-1 {
-		arr = arr[:id]
-		return arr
-	}
-	arr = append(arr[:id], arr[id+1:]...)
-	return arr
+	close(c)
 }

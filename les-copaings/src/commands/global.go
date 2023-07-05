@@ -16,7 +16,17 @@ func respondEphemeralInteraction(client *discordgo.Session, i *discordgo.Interac
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: msg,
-			Flags: discordgo.MessageFlagsEphemeral,
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
+}
+
+func respondLoadingInteraction(client *discordgo.Session, i *discordgo.InteractionCreate, msg string) error {
+	return client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: msg,
+			Flags:   discordgo.MessageFlagsLoading,
 		},
 	})
 }

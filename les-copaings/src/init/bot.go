@@ -1,6 +1,7 @@
 package start
 
 import (
+	"fmt"
 	cmd "github.com/anhgelus/discord-bots/les-copaings/src/commands"
 	event "github.com/anhgelus/discord-bots/les-copaings/src/events"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
@@ -20,11 +21,16 @@ func Bot(token string, resetEach uint) {
 	if err != nil {
 		utils.SendAlert("bot.go - Start", err.Error())
 	}
+	dg.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+		utils.SendSuccess(fmt.Sprintf("Bot started as %s", s.State.User.Username))
+	})
 
-	utils.SendSuccess("Bot started")
 	initCommands()
-	utils.SendSuccess("RegisterCommands generated")
-	go RegisterCommands(dg)
+	utils.SendSuccess("Commands generated")
+	go func() {
+		RegisterCommands(dg)
+		utils.SendSuccess("Commands registered")
+	}()
 	CommandHandlers(dg)
 	dg.AddHandler(event.ReactionAdd)
 	dg.AddHandler(event.MessageSent)
