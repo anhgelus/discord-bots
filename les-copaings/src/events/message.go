@@ -16,7 +16,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	exp := xp.CalcExperience(calcPower(content))
 
 	copaing := sql.Copaing{UserID: event.Author.ID, GuildID: event.GuildID}
-	result := sql.DB.FirstOrCreate(&copaing, copaing)
+	result := sql.DB.Where("user_id = ? AND guild_id = ?", copaing.UserID, copaing.GuildID).FirstOrCreate(&copaing, copaing)
 	if result.Error != nil {
 		utils.SendAlert("message.go - Querying/Creating copaing", result.Error.Error())
 		return
@@ -55,7 +55,7 @@ func calcPower(message string) (uint, uint) {
 
 func updateRoles(copaing *sql.Copaing, client *discordgo.Session, event *discordgo.MessageCreate) {
 	cfg := sql.Config{GuildID: copaing.GuildID}
-	sql.DB.Model(&sql.Config{}).Preload("XpRoles").FirstOrCreate(&cfg)
+	sql.DB.Model(&sql.Config{}).Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(&cfg)
 
 	roles := make(chan string)
 

@@ -14,9 +14,11 @@ services:
     image: postgres:alpine
     env_file:
       - .env
+    volumes:
+      - /temp/data:/var/lib/postgresql/data
   redis:
     image: redis:alpine
-  adminer:
-    image: adminer
-    ports:
-      - '8080:8080'
+#  adminer:
+#    image: adminer
+#    ports:
+#      - '8080:8080'

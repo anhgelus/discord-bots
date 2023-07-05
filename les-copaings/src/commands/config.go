@@ -251,5 +251,5 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 }
 
 func loadConfig(cfg *sql.Config) {
-	sql.DB.Preload("XpRoles").FirstOrCreate(cfg)
+	sql.DB.Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(cfg)
 }

@@ -31,7 +31,7 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	exp := xp.CalcExperienceFromVocal(user.TimeConnected)
 
 	copaing := sql.Copaing{UserID: event.UserID, GuildID: event.GuildID}
-	result := sql.DB.FirstOrCreate(&copaing, copaing)
+	result := sql.DB.Where("user_id = ? AND guild_id = ?", copaing.UserID, copaing.GuildID).FirstOrCreate(&copaing, copaing)
 	if result.Error != nil {
 		utils.SendAlert("vocal.go - Querying/Creating copaing", result.Error.Error())
 		return

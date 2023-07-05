@@ -64,7 +64,7 @@ func ResetGuild(s *discordgo.Session, guild *discordgo.Guild, interval uint) {
 
 	// reset roles
 	cfg := sql.Config{GuildID: guild.ID}
-	sql.DB.Preload("XpRoles").FirstOrCreate(&cfg)
+	sql.DB.Preload("XpRoles").Where("guild_id = ?", cfg.GuildID).FirstOrCreate(&cfg)
 	members := utils.FetchGuildUser(s, guild.ID)
 	for _, member := range members {
 		for _, role := range member.Roles {

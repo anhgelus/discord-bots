@@ -11,7 +11,7 @@ import (
 
 func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	var tops []sql.Copaing
-	sql.DB.Order("xp desc").Limit(10).Find(&tops)
+	sql.DB.Order("xp desc").Limit(10).Where("guild_id = ?", i.GuildID).Find(&tops)
 	var msg string
 	for i, top := range tops {
 		user, err := client.User(top.UserID)
