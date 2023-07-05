@@ -23,8 +23,8 @@ func Bot(token string, resetEach uint) {
 
 	utils.SendSuccess("Bot started")
 	initCommands()
-	utils.SendSuccess("Command generated")
-	Command(dg)
+	utils.SendSuccess("RegisterCommands generated")
+	go RegisterCommands(dg)
 	CommandHandlers(dg)
 	dg.AddHandler(event.ReactionAdd)
 	dg.AddHandler(event.MessageSent)

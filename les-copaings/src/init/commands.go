@@ -13,7 +13,7 @@ type Cmd struct {
 
 var cmds []Cmd
 
-func Command(client *discordgo.Session) {
+func RegisterCommands(client *discordgo.Session) {
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(cmds))
 	o := 0
 	for i, v := range cmds {
