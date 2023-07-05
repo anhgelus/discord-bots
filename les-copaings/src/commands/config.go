@@ -69,6 +69,10 @@ func Config(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	switch data.id {
 	case "xp-roles":
 		data.xpRoles(client, i)
+	case "set-broadcast":
+		data.setBroadcast(client, i)
+	default:
+		utils.SendAlert("config.go - Switch id", "not handled "+data.id)
 	}
 }
 
@@ -110,7 +114,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	}
 
 	cfg := sql.Config{GuildID: i.GuildID}
-	sql.DB.FirstOrCreate(&cfg)
+	loadConfig(&cfg)
 
 	if data.value == "remove" {
 		for id, xpr := range cfg.XpRoles {
@@ -136,7 +140,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	if err != nil {
 		err = respondEphemeralInteraction(client, i, "L'argument arg2 est invalide (impossible de le convertir en entier)")
 		if err != nil {
-			utils.SendAlert("config.go - Respond interaction invald arg2", err.Error())
+			utils.SendAlert("config.go - Respond interaction invalid arg2", err.Error())
 		}
 		return
 	}
@@ -161,9 +165,30 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	}
 }
 
+func (data *configData) setBroadcast(client *discordgo.Session, i *discordgo.InteractionCreate) {
+	cfg := sql.Config{GuildID: i.GuildID}
+	loadConfig(&cfg)
+
+	_, err := client.Channel(data.value)
+	if err != nil {
+		err = respondEphemeralInteraction(client, i, "Impossible de récupérer le salon avec l'id "+data.value)
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction invalid value", err.Error())
+		}
+		return
+	}
+	cfg.BroadcastChannel = data.value
+	sql.DB.Save(&cfg)
+
+	err = respondInteraction(client, i, "Changement effectué !")
+	if err != nil {
+		utils.SendAlert("config.go - Respond interaction invalid value", err.Error())
+	}
+}
+
 func (data *configData) showConfig(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg := sql.Config{GuildID: i.GuildID}
-	sql.DB.Preload("XpRoles").FirstOrCreate(&cfg)
+	loadConfig(&cfg)
 
 	var embeds []*discordgo.MessageEmbed
 
@@ -223,4 +248,8 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 	if err != nil {
 		utils.SendAlert("config.go - Respond interaction show", err.Error())
 	}
+}
+
+func loadConfig(cfg *sql.Config) {
+	sql.DB.Preload("XpRoles").FirstOrCreate(cfg)
 }
