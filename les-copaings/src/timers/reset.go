@@ -13,9 +13,9 @@ import (
 
 const LastResetKey = "guild_id:last_reset"
 
-func SetupTimers(interval uint, s *discordgo.Session) {
+func SetupTimers(s *discordgo.Session, interval uint) {
 	utils.NewTimers(1*time.Minute, func(_ chan struct{}) {
-		checkReset(interval, s)
+		checkReset(s, interval)
 	})
 }
 
@@ -23,11 +23,11 @@ func intervalToUnix(interval uint) int {
 	return int(interval * 30 * 24 * 60 * 60)
 }
 
-func checkReset(interval uint, s *discordgo.Session) {
-	checkGuilds(s.State.Guilds, interval, s)
+func checkReset(s *discordgo.Session, interval uint) {
+	checkGuilds(s, s.State.Guilds, interval)
 }
 
-func checkGuilds(guilds []*discordgo.Guild, interval uint, s *discordgo.Session) {
+func checkGuilds(s *discordgo.Session, guilds []*discordgo.Guild, interval uint) {
 	client, _ := redis.Credentials.GetClient()
 	for _, guild := range guilds {
 		val := client.Get(redis.Ctx, GenLastResetKey(guild.ID))
@@ -44,7 +44,7 @@ func checkGuilds(guilds []*discordgo.Guild, interval uint, s *discordgo.Session)
 			continue
 		}
 		if time.Now().Unix() >= int64(last+intervalToUnix(interval)) {
-			reset(s)
+			ResetGuild(s, guild)
 		}
 	}
 }
@@ -57,21 +57,27 @@ func InitializeGuild(guildID string, client *rdb.Client) {
 	client.Set(redis.Ctx, GenLastResetKey(guildID), time.Now().Unix(), 0)
 }
 
-func reset(s *discordgo.Session) {
-	guilds, err := s.UserGuilds(0, "", "")
-	if err != nil {
-		utils.SendAlert("reset.go - Guilds", err.Error())
-		return
-	}
-	for _, guild := range guilds {
-		ResetGuild(guild)
-	}
-}
-
-func ResetGuild(guild *discordgo.UserGuild) {
-	//TODO: send message to broadcast the reset when config will be implemented
-	//TODO: reset roles when roles will be implemented
-
+func ResetGuild(s *discordgo.Session, guild *discordgo.Guild) {
 	// reset the xp of all members
 	sql.DB.Model(sql.Copaing{}).Where("guild_id = ?", guild.ID).Updates(sql.Copaing{XP: 0})
+
+	// reset roles
+	cfg := sql.Config{GuildID: guild.ID}
+	sql.DB.FirstOrCreate(&cfg)
+	members := utils.FetchGuildUser(s, guild.ID)
+	for _, member := range members {
+		for _, role := range member.Roles {
+			for _, xpr := range cfg.XpRoles {
+				if xpr.Role == role {
+					err := s.GuildMemberRoleRemove(guild.ID, member.User.ID, role)
+					if err != nil {
+						utils.SendAlert("reset.go - Reset roles", err.Error())
+						continue
+					}
+				}
+			}
+		}
+	}
+
+	//TODO: broadcast this news
 }

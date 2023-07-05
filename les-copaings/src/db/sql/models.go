@@ -13,8 +13,9 @@ type Copaing struct {
 
 type Config struct {
 	gorm.Model
-	GuildID string `gorm:"not null"`
-	XpRoles []XpRole
+	GuildID          string `gorm:"not null"`
+	XpRoles          []XpRole
+	BroadcastChannel string
 }
 
 type XpRole struct {

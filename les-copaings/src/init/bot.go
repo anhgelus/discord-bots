@@ -40,7 +40,7 @@ func Bot(token string, resetEach uint) {
 	dg.AddHandler(event.GuildCreate)
 	dg.AddHandler(event.GuildDelete)
 
-	timers.SetupTimers(resetEach, dg)
+	timers.SetupTimers(dg, resetEach)
 
 	dg.Identify.Intents = discordgo.IntentsAll
 
