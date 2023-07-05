@@ -16,3 +16,7 @@ services:
       - .env
   redis:
     image: redis:alpine
+  adminer:
+    image: adminer
+    ports:
+      - '8080:8080'

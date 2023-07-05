@@ -119,13 +119,21 @@ func initCommands() {
 							Name:  "Rôles liés à l'XP",
 							Value: "xp-roles",
 						},
+						{
+							Name:  "Voir les paramètres",
+							Value: "show",
+						},
+						{
+							Name:  "Change le salon des news",
+							Value: "set-broadcast",
+						},
 					},
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "valeur",
+					Name:        "value",
 					Description: "Nouvelle valeur",
-					Required:    true,
+					Required:    false,
 				},
 				{
 					Type:        discordgo.ApplicationCommandOptionString,

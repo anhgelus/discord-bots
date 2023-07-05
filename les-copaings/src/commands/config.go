@@ -1,15 +1,17 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/anhgelus/discord-bots/les-copaings/src/xp"
 	"github.com/bwmarrin/discordgo"
 	"strconv"
+	"time"
 )
 
 var (
-	configs    = []string{"xp-roles"}
+	configs    = []string{"xp-roles", "show", "set-broadcast"}
 	subXpRoles = []string{"add", "edit", "remove"}
 )
 
@@ -49,12 +51,17 @@ func Config(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	if opt, ok := options["valeur"]; ok {
+	if data.id == "show" {
+		data.showConfig(client, i)
+		return
+	}
+
+	if opt, ok := options["value"]; ok {
 		data.value = opt.StringValue()
 	} else {
 		err := respondEphemeralInteraction(client, i, "L'argument valeur n'a pas été renseigné")
 		if err != nil {
-			utils.SendAlert("config.go - Respond interaction valeur", err.Error())
+			utils.SendAlert("config.go - Respond interaction value", err.Error())
 		}
 		return
 	}
@@ -151,5 +158,69 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	err = respondInteraction(client, i, "Valeur enregistrée !")
 	if err != nil {
 		utils.SendAlert("config.go - Respond interaction value saved", err.Error())
+	}
+}
+
+func (data *configData) showConfig(client *discordgo.Session, i *discordgo.InteractionCreate) {
+	cfg := sql.Config{GuildID: i.GuildID}
+	sql.DB.Preload("XpRoles").FirstOrCreate(&cfg)
+
+	var embeds []*discordgo.MessageEmbed
+
+	main := discordgo.MessageEmbed{
+		Title:       "Config",
+		Description: "Configuration du serveur\n",
+		Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "© 2023 - Les Copaings",
+		},
+		Color:     utils.Success,
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+	var brcChan string
+	if cfg.BroadcastChannel == "" {
+		brcChan = "Pas de salon :(\nUtilisez la commande `/config` pour le setup !"
+	} else {
+		brcChan = fmt.Sprintf("<#%s>", cfg.BroadcastChannel)
+	}
+	fields := []*discordgo.MessageEmbedField{
+		{
+			Name:   "Salon annonces",
+			Value:  brcChan,
+			Inline: false,
+		},
+	}
+	main.Fields = fields
+
+	xpRoles := discordgo.MessageEmbed{
+		Title:       "Rôles liés aux niveaux",
+		Description: "Liste des rôles:\n",
+		Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "© 2023 - Les Copaings",
+		},
+		Color:     utils.Success,
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+	for _, xpr := range cfg.XpRoles {
+		field := discordgo.MessageEmbedField{
+			Name:   fmt.Sprintf("Niveau %d", xp.CalcLevel(xpr.XP)),
+			Value:  fmt.Sprintf("<@&%s>", xpr.Role),
+			Inline: false,
+		}
+		xpRoles.Fields = append(xpRoles.Fields, &field)
+	}
+
+	embeds = append(embeds, &main, &xpRoles)
+
+	err := client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Embeds: embeds,
+		},
+	})
+
+	if err != nil {
+		utils.SendAlert("config.go - Respond interaction show", err.Error())
 	}
 }
