@@ -25,7 +25,7 @@ func Ping(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	interactionTimestamp, err := utils.GetTimestampFromId(i.ID)
 	if err != nil {
 		utils.SendAlert("ping.go - Get timestamp from ID", err.Error())
-		msg = "� Pong !"
+		msg = ":ping_pong: Pong !"
 	} else {
 		utils.SendDebug(interactionTimestamp.Format(time.UnixDate))
 		msg = fmt.Sprintf(
