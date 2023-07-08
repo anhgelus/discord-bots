@@ -81,7 +81,7 @@ func initCommands() {
 	cmds = append(cmds, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "ping",
-			Description: "Juste un ping",
+			Description: "Obtenez le ping du bot",
 		},
 		Handler: cmd.Ping,
 	}, Cmd{
