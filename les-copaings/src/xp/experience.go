@@ -23,3 +23,8 @@ func CalcXpForLevel(level uint) uint {
 	// (f(x)/0.1)^2 = x
 	return uint(math.Floor(math.Pow(10*float64(level), 2)))
 }
+
+func CalcXpLose(inactivity uint) uint {
+	// f(x)= 0.01x^2
+	return uint(math.Floor(0.01 * math.Pow(float64(inactivity), 2)))
+}
