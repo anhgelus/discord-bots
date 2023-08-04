@@ -107,8 +107,11 @@ func (user *ConnectedUser) TimeSinceLastEvent() int64 {
 	client, _ := Credentials.GetClient()
 	defer client.Close()
 
-	lastStr := client.Get(Ctx, user.genKey("last_event")).Val()
-	last, err := strconv.Atoi(lastStr)
+	lastStr := client.Get(Ctx, user.genKey("last_event"))
+	if lastStr.Err() == redis.Nil {
+		return 0
+	}
+	last, err := strconv.Atoi(lastStr.Val())
 	if err != nil {
 		utils.SendAlert("redis.go - Str to Int Conversion", err.Error())
 		return 0
