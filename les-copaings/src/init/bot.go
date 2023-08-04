@@ -52,7 +52,7 @@ func Bot(token string) {
 		utils.SendSuccess("Commands registered")
 	}()
 	CommandHandlers(dg)
-	dg.AddHandler(event.ReactionAdd)
+	//dg.AddHandler(event.ReactionAdd)
 	dg.AddHandler(event.MessageSent)
 	dg.AddHandler(event.ConnectionVocal)
 	dg.AddHandler(event.DisconnectionVocal)
