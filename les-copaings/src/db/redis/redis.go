@@ -96,6 +96,26 @@ func (user *ConnectedUser) GenerateTimeConnected() {
 	user.TimeConnected = CalcTime(uint(connectAt))
 }
 
+func (user *ConnectedUser) UpdateLastEvent() {
+	client, _ := Credentials.GetClient()
+	defer client.Close()
+
+	client.Set(Ctx, user.genKey("last_event"), time.Now().Unix(), 0)
+}
+
+func (user *ConnectedUser) TimeSinceLastEvent() int64 {
+	client, _ := Credentials.GetClient()
+	defer client.Close()
+
+	lastStr := client.Get(Ctx, user.genKey("last_event")).Val()
+	last, err := strconv.Atoi(lastStr)
+	if err != nil {
+		utils.SendAlert("redis.go - Str to Int Conversion", err.Error())
+		return 0
+	}
+	return time.Now().Unix() - int64(last)
+}
+
 func CalcTime(connectAt uint) uint {
 	timeConnected := uint(time.Now().Unix() - int64(connectAt))
 	// Limit the time connect to 6 hours

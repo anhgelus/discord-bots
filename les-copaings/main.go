@@ -15,9 +15,8 @@ import (
 var defaultConfig string
 
 type Config struct {
-	SQL       sql.DBCredentials
-	Redis     redis.RedisCredentials
-	ResetEach uint
+	SQL   sql.DBCredentials
+	Redis redis.RedisCredentials
 }
 
 func main() {
@@ -54,5 +53,5 @@ func main() {
 	}
 	client.Close()
 	redis.Credentials = cfg.Redis
-	start.Bot(os.Args[1], cfg.ResetEach)
+	start.Bot(os.Args[1])
 }
