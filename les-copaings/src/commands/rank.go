@@ -12,13 +12,23 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	optionMap := generateOptionMap(i)
 
 	var hasOption bool
-	var user *discordgo.User
+	var member *discordgo.Member
 	copaing := sql.Copaing{GuildID: i.GuildID}
 	if opt, ok := optionMap["membre"]; ok {
 		hasOption = ok
-		user = opt.UserValue(client)
+		user := opt.UserValue(client)
+		var err error
+		member, err = client.GuildMember(i.GuildID, user.ID)
+		if err != nil {
+			utils.SendAlert("rank.go - Fetching the member", err.Error())
+			err = respondInteraction(client, i, "Impossible de récupérer le membre!")
+			if err != nil {
+				utils.SendAlert("rank.go - Respond interaction bot xp", err.Error())
+			}
+			return
+		}
 		if user.Bot {
-			err := respondInteraction(client, i, "Les bots n'ont pas de niveau !")
+			err = respondInteraction(client, i, "Les bots n'ont pas de niveau !")
 			if err != nil {
 				utils.SendAlert("rank.go - Respond interaction bot xp", err.Error())
 			}
@@ -33,6 +43,11 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	if result.Error != nil {
 		utils.SendAlert("rank.go - Querying or creating copaing", result.Error.Error())
 		return
+	}
+
+	data := xp.NewXp(member, &copaing, 0)
+	if data.IsNewLevel {
+		xp.UpdateRolesNoMessage(&copaing, client)
 	}
 
 	var msg string
