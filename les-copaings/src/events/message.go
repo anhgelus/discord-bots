@@ -15,12 +15,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	event.Member.User = event.Author
 	exp := xp.CalcExperience(calcPower(content))
 
-	copaing := sql.Copaing{UserID: event.Author.ID, GuildID: event.GuildID}
-	result := sql.DB.Where("user_id = ? AND guild_id = ?", copaing.UserID, copaing.GuildID).FirstOrCreate(&copaing, copaing)
-	if result.Error != nil {
-		utils.SendAlert("message.go - Querying/Creating copaing", result.Error.Error())
-		return
-	}
+	copaing := sql.GetCopaing(event.Author.ID, event.GuildID)
 
 	if xp.NewXp(event.Member, &copaing, exp) {
 		err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
@@ -29,7 +24,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		}
 		xp.UpdateRoles(&copaing, client, event)
 	}
-	result = sql.DB.Save(&copaing)
+	result := sql.DB.Save(&copaing)
 	if result.Error != nil {
 		utils.SendAlert("message.go - Save copaing", result.Error.Error())
 		return

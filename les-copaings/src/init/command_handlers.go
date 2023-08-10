@@ -14,10 +14,7 @@ func CommandHandlers(s *discordgo.Session) {
 	}
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandsHandler[i.ApplicationCommandData().Name]; ok {
-			//user := redis.GenerateConnectedUser(i.Member)
-			//time := user.TimeSinceLastEvent()
-			//reduce := xp.CalcXpLose(utils.HoursOfUnix(time))
-			//user.UpdateLastEvent()
+			//xp.NewXp(i.Member, )
 
 			h(s, i)
 		}
