@@ -39,12 +39,12 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 		utils.SendAlert("vocal.go - Querying/Creating copaing", result.Error.Error())
 		return
 	}
+	oldLvl := xp.CalcLevel(copaing.XP)
 	if int(copaing.XP)-int(reduce) < 0 {
 		copaing.XP = 0
 	} else {
 		copaing.XP -= reduce
 	}
-	oldLvl := xp.CalcLevel(copaing.XP)
 	copaing.XP += exp
 	if oldLvl != xp.CalcLevel(copaing.XP) {
 		xp.UpdateRolesNoMessage(&copaing, client)

@@ -17,7 +17,6 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	user := redis.GenerateConnectedUser(event.Member)
 	time := user.TimeSinceLastEvent()
 	reduce := xp.CalcXpLose(utils.HoursOfUnix(time))
-	println(event.Author.Username, reduce)
 	user.UpdateLastEvent()
 	exp := xp.CalcExperience(calcPower(content))
 
@@ -27,12 +26,12 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		utils.SendAlert("message.go - Querying/Creating copaing", result.Error.Error())
 		return
 	}
+	oldLvl := xp.CalcLevel(copaing.XP)
 	if int(copaing.XP)-int(reduce) < 0 {
 		copaing.XP = 0
 	} else {
 		copaing.XP -= reduce
 	}
-	oldLvl := xp.CalcLevel(copaing.XP)
 	copaing.XP += exp
 	if oldLvl != xp.CalcLevel(copaing.XP) {
 		err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
