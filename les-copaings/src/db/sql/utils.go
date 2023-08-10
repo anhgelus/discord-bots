@@ -31,3 +31,11 @@ func GetCopaing(userID string, guildID string) Copaing {
 	}
 	return copaing
 }
+
+func Save(i interface{}) {
+	result := DB.Save(i)
+	if result.Error != nil {
+		utils.SendAlert("message.go - Save copaing", result.Error.Error())
+		return
+	}
+}

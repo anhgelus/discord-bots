@@ -14,8 +14,11 @@ func CommandHandlers(s *discordgo.Session) {
 	}
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandsHandler[i.ApplicationCommandData().Name]; ok {
-			//xp.NewXp(i.Member, )
-
+			//copaing := sql.GetCopaing(i.User.ID, i.GuildID)
+			//if xp.NewXp(i.Member, &copaing, 0) {
+			//	xp.UpdateRolesNoMessage(&copaing, s)
+			//}
+			//sql.Save(&copaing)
 			h(s, i)
 		}
 	})

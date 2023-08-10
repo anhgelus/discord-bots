@@ -24,11 +24,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		}
 		xp.UpdateRoles(&copaing, client, event)
 	}
-	result := sql.DB.Save(&copaing)
-	if result.Error != nil {
-		utils.SendAlert("message.go - Save copaing", result.Error.Error())
-		return
-	}
+	sql.Save(&copaing)
 }
 
 func calcPower(message string) (uint, uint) {

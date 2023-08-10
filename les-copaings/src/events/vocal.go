@@ -3,7 +3,6 @@ package events
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
-	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/anhgelus/discord-bots/les-copaings/src/xp"
 	"github.com/bwmarrin/discordgo"
 )
@@ -35,9 +34,5 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	if xp.NewXp(event.Member, &copaing, exp) {
 		xp.UpdateRolesNoMessage(&copaing, client)
 	}
-	result := sql.DB.Save(&copaing)
-	if result.Error != nil {
-		utils.SendAlert("vocal.go - Save copaing", result.Error.Error())
-		return
-	}
+	sql.Save(&copaing)
 }

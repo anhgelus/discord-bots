@@ -123,7 +123,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 			}
 			cfg.XpRoles = append(cfg.XpRoles[:id], cfg.XpRoles[id+1:]...)
 		}
-		sql.DB.Save(&cfg)
+		sql.Save(&cfg)
 		return
 	}
 
@@ -158,7 +158,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 			cfg.XpRoles[id] = xpr
 		}
 	}
-	sql.DB.Save(&cfg)
+	sql.Save(&cfg)
 	err = respondInteraction(client, i, "Valeur enregistrée !")
 	if err != nil {
 		utils.SendAlert("config.go - Respond interaction value saved", err.Error())
@@ -178,7 +178,7 @@ func (data *configData) setBroadcast(client *discordgo.Session, i *discordgo.Int
 		return
 	}
 	cfg.BroadcastChannel = data.value
-	sql.DB.Save(&cfg)
+	sql.Save(&cfg)
 
 	err = respondInteraction(client, i, "Changement effectué !")
 	if err != nil {
