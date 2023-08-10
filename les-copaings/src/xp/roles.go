@@ -9,63 +9,49 @@ import (
 )
 
 func UpdateRoles(copaing *sql.Copaing, client *discordgo.Session, event *discordgo.MessageCreate) {
-	cfg := sql.Config{GuildID: copaing.GuildID}
-	sql.DB.Model(&sql.Config{}).Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(&cfg)
-
-	roles := make(chan string)
-	notRoles := make(chan string)
-
-	go sql.GetNewRoles(copaing, &cfg, event.Member.Roles, roles, notRoles)
-
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
-
-	go func() {
-		for role := range roles {
-			err := client.GuildMemberRoleAdd(copaing.GuildID, copaing.UserID, role)
-			if err != nil {
-				utils.SendAlert("roles.go - Role add", err.Error())
-				_, err = client.ChannelMessageSend(event.ChannelID, "Impossible de vous ajouter le rôle "+role)
-				if err != nil {
-					utils.SendAlert("roles.go - Message send role failed", err.Error())
-				}
-				continue
-			}
-			_, err = client.ChannelMessageSend(event.ChannelID,
-				fmt.Sprintf("<@%s>, vous venez d'obtenir un nouveau rôle !", copaing.UserID),
-			)
-			if err != nil {
-				utils.SendAlert("roles.go - New role message", err.Error())
-			}
+	added, lost := updateRoles(copaing, client)
+	if added > 1 {
+		_, err := client.ChannelMessageSend(event.ChannelID,
+			fmt.Sprintf("%s a gagné %d rôles !", event.Author.Mention(), added),
+		)
+		if err != nil {
+			utils.SendAlert("roles.go - Cannot send message for roles added", err.Error())
+			return
 		}
-		wg.Done()
-	}()
-
-	go func() {
-		for role := range notRoles {
-			err := client.GuildMemberRoleRemove(copaing.GuildID, copaing.UserID, role)
-			if err != nil {
-				utils.SendAlert("roles.go - Role remove", err.Error())
-				_, err = client.ChannelMessageSend(event.ChannelID, "Impossible de vous supprimer le rôle "+role)
-				if err != nil {
-					utils.SendAlert("roles.go - Message send role failed", err.Error())
-				}
-				continue
-			}
-			_, err = client.ChannelMessageSend(event.ChannelID,
-				fmt.Sprintf("<@%s>, vous avez perdu un rôle !", copaing.UserID),
-			)
-			if err != nil {
-				utils.SendAlert("roles.go - Role lost message", err.Error())
-			}
+	} else if added == 1 {
+		_, err := client.ChannelMessageSend(event.ChannelID,
+			fmt.Sprintf("%s a gagné 1 rôle !", event.Author.Mention()),
+		)
+		if err != nil {
+			utils.SendAlert("roles.go - Cannot send message for role added", err.Error())
+			return
 		}
-		wg.Done()
-	}()
+	}
 
-	wg.Wait()
+	if lost > 1 {
+		_, err := client.ChannelMessageSend(event.ChannelID,
+			fmt.Sprintf("%s a perdu %d rôles !", event.Author.Mention(), lost),
+		)
+		if err != nil {
+			utils.SendAlert("roles.go - Cannot send message for roles lost", err.Error())
+			return
+		}
+	} else if lost == 1 {
+		_, err := client.ChannelMessageSend(event.ChannelID,
+			fmt.Sprintf("%s a perdu 1 rôle !", event.Author.Mention()),
+		)
+		if err != nil {
+			utils.SendAlert("roles.go - Cannot send message for role lost", err.Error())
+			return
+		}
+	}
 }
 
 func UpdateRolesNoMessage(copaing *sql.Copaing, client *discordgo.Session) {
+	_, _ = updateRoles(copaing, client)
+}
+
+func updateRoles(copaing *sql.Copaing, client *discordgo.Session) (uint, uint) {
 	cfg := sql.Config{GuildID: copaing.GuildID}
 	sql.DB.Model(&sql.Config{}).Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(&cfg)
 
@@ -82,6 +68,9 @@ func UpdateRolesNoMessage(copaing *sql.Copaing, client *discordgo.Session) {
 	wg := &sync.WaitGroup{}
 	wg.Add(2)
 
+	added := 0
+	lost := 0
+
 	go func() {
 		for role := range roles {
 			err = client.GuildMemberRoleAdd(copaing.GuildID, copaing.UserID, role)
@@ -89,6 +78,7 @@ func UpdateRolesNoMessage(copaing *sql.Copaing, client *discordgo.Session) {
 				utils.SendAlert("roles.go - Role add no msg", err.Error())
 				continue
 			}
+			added++
 		}
 		wg.Done()
 	}()
@@ -100,9 +90,12 @@ func UpdateRolesNoMessage(copaing *sql.Copaing, client *discordgo.Session) {
 				utils.SendAlert("message.go - Role remove no msg", err.Error())
 				continue
 			}
+			lost++
 		}
 		wg.Done()
 	}()
 
 	wg.Wait()
+
+	return uint(added), uint(lost)
 }
