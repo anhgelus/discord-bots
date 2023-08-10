@@ -95,6 +95,12 @@ func initCommands() {
 		Handler: cmd.Top,
 	}, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "reset_xp",
+			Description: "Reset l'XP",
+		},
+		Handler: cmd.ResetXP,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "rank",
 			Description: "Obtenez votre rang",
 			Options: []*discordgo.ApplicationCommandOption{
