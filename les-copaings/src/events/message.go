@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/anhgelus/discord-bots/les-copaings/src/xp"
@@ -13,28 +12,21 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		return
 	}
 	content := event.Message.Content
+	event.Member.User = event.Author
 	exp := xp.CalcExperience(calcPower(content))
 
-	copaing := sql.Copaing{UserID: event.Author.ID, GuildID: event.GuildID}
-	result := sql.DB.Where("user_id = ? AND guild_id = ?", copaing.UserID, copaing.GuildID).FirstOrCreate(&copaing, copaing)
-	if result.Error != nil {
-		utils.SendAlert("message.go - Querying/Creating copaing", result.Error.Error())
-		return
-	}
-	oldLvl := xp.CalcLevel(copaing.XP)
-	copaing.XP += exp
-	if oldLvl != xp.CalcLevel(copaing.XP) {
-		err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
-		if err != nil {
-			utils.SendAlert("message.go - Reaction add", err.Error())
+	copaing := sql.GetCopaing(event.Author.ID, event.GuildID)
+	data := xp.NewXp(event.Member, &copaing, exp)
+	if data.IsNewLevel {
+		if data.LevelUp {
+			err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
+			if err != nil {
+				utils.SendAlert("message.go - Reaction add", err.Error())
+			}
 		}
-		updateRoles(&copaing, client, event)
+		xp.UpdateRoles(&copaing, client, event)
 	}
-	result = sql.DB.Save(&copaing)
-	if result.Error != nil {
-		utils.SendAlert("message.go - Save copaing", result.Error.Error())
-		return
-	}
+	sql.Save(&copaing)
 }
 
 func calcPower(message string) (uint, uint) {
@@ -51,31 +43,4 @@ func calcPower(message string) (uint, uint) {
 		}
 	}
 	return uint(len(message)), uint(len(chars))
-}
-
-func updateRoles(copaing *sql.Copaing, client *discordgo.Session, event *discordgo.MessageCreate) {
-	cfg := sql.Config{GuildID: copaing.GuildID}
-	sql.DB.Model(&sql.Config{}).Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(&cfg)
-
-	roles := make(chan string)
-
-	go sql.GetNewRoles(copaing, &cfg, event.Member.Roles, roles)
-
-	for role := range roles {
-		err := client.GuildMemberRoleAdd(copaing.GuildID, copaing.UserID, role)
-		if err != nil {
-			utils.SendAlert("message.go - Role add", err.Error())
-			_, err = client.ChannelMessageSend(event.ChannelID, "Impossible de vous ajouter le rôle "+role)
-			if err != nil {
-				utils.SendAlert("message.go - Message send role failed", err.Error())
-			}
-			continue
-		}
-		_, err = client.ChannelMessageSend(event.ChannelID,
-			fmt.Sprintf("<@%s>, vous venez d'obtenir un nouveau rôle !", copaing.UserID),
-		)
-		if err != nil {
-			utils.SendAlert("message.go - New role message", err.Error())
-		}
-	}
 }

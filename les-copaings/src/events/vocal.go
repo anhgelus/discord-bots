@@ -3,7 +3,6 @@ package events
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
-	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/anhgelus/discord-bots/les-copaings/src/xp"
 	"github.com/bwmarrin/discordgo"
 )
@@ -30,20 +29,10 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	user.Disconnect()
 	exp := xp.CalcExperienceFromVocal(user.TimeConnected)
 
-	copaing := sql.Copaing{UserID: event.UserID, GuildID: event.GuildID}
-	result := sql.DB.Where("user_id = ? AND guild_id = ?", copaing.UserID, copaing.GuildID).FirstOrCreate(&copaing, copaing)
-	if result.Error != nil {
-		utils.SendAlert("vocal.go - Querying/Creating copaing", result.Error.Error())
-		return
+	copaing := sql.GetCopaing(event.UserID, event.GuildID)
+	data := xp.NewXp(event.Member, &copaing, exp)
+	if data.IsNewLevel {
+		xp.UpdateRolesNoMessage(&copaing, client)
 	}
-	oldLvl := xp.CalcLevel(copaing.XP)
-	copaing.XP += exp
-	if oldLvl != xp.CalcLevel(copaing.XP) {
-		//TODO: handle level up on vocal
-	}
-	result = sql.DB.Save(&copaing)
-	if result.Error != nil {
-		utils.SendAlert("vocal.go - Save copaing", result.Error.Error())
-		return
-	}
+	sql.Save(&copaing)
 }

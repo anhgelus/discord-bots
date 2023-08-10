@@ -4,7 +4,6 @@ import (
 	"fmt"
 	cmd "github.com/anhgelus/discord-bots/les-copaings/src/commands"
 	event "github.com/anhgelus/discord-bots/les-copaings/src/events"
-	"github.com/anhgelus/discord-bots/les-copaings/src/timers"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/bwmarrin/discordgo"
 	"math/rand"
@@ -14,7 +13,7 @@ import (
 	"time"
 )
 
-func Bot(token string, resetEach uint) {
+func Bot(token string) {
 	dg, err := discordgo.New("Bot " + token) // Define connection to discord API with bot token
 	if err != nil {
 		utils.SendAlert("bot.go - Token", err.Error())
@@ -53,14 +52,12 @@ func Bot(token string, resetEach uint) {
 		utils.SendSuccess("Commands registered")
 	}()
 	CommandHandlers(dg)
-	dg.AddHandler(event.ReactionAdd)
+	//dg.AddHandler(event.ReactionAdd)
 	dg.AddHandler(event.MessageSent)
 	dg.AddHandler(event.ConnectionVocal)
 	dg.AddHandler(event.DisconnectionVocal)
 	dg.AddHandler(event.GuildCreate)
 	dg.AddHandler(event.GuildDelete)
-
-	timers.SetupTimers(dg, resetEach)
 
 	dg.Identify.Intents = discordgo.IntentsAll
 
