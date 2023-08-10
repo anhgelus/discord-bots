@@ -19,8 +19,8 @@ func CalcExperienceFromVocal(length uint) uint {
 }
 
 func CalcLevel(xp uint) uint {
-	// f(x)=0.1 x^0.5
-	return uint(math.Floor(0.1 * math.Pow(float64(xp), 0.5)))
+	// f(x)=0.2 x^0.5
+	return uint(math.Floor(0.2 * math.Pow(float64(xp), 0.5)))
 }
 
 func CalcXpForLevel(level uint) uint {
