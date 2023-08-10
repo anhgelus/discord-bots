@@ -95,8 +95,9 @@ func initCommands() {
 		Handler: cmd.Top,
 	}, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "reset_xp",
-			Description: "Reset l'XP",
+			Name:                     "reset_xp",
+			Description:              "Reset l'XP",
+			DefaultMemberPermissions: &adminPerm,
 		},
 		Handler: cmd.ResetXP,
 	}, Cmd{
