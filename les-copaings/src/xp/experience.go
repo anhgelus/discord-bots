@@ -1,6 +1,12 @@
 package xp
 
-import "math"
+import (
+	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
+	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
+	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
+	"github.com/bwmarrin/discordgo"
+	"math"
+)
 
 func CalcExperience(length uint, diversity uint) uint {
 	// f(x;y) = ((0.025 x^{1.25})/(y^{-0.5}))+1
@@ -27,4 +33,20 @@ func CalcXpForLevel(level uint) uint {
 func CalcXpLose(inactivity uint) uint {
 	// f(x)= 0.01x^2
 	return uint(math.Floor(0.01 * math.Pow(float64(inactivity), 2)))
+}
+
+func NewXp(member *discordgo.Member, copaing *sql.Copaing, exp uint) bool {
+	user := redis.GenerateConnectedUser(member)
+	time := user.TimeSinceLastEvent()
+	reduce := CalcXpLose(utils.HoursOfUnix(time))
+	user.UpdateLastEvent()
+
+	oldLvl := CalcLevel(copaing.XP)
+	if int(copaing.XP)-int(reduce) < 0 {
+		copaing.XP = 0
+	} else {
+		copaing.XP -= reduce
+	}
+	copaing.XP += exp
+	return CalcLevel(copaing.XP) != oldLvl
 }

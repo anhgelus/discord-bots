@@ -27,9 +27,6 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 		return
 	}
 	user := redis.GenerateConnectedUser(event.Member)
-	time := user.TimeSinceLastEvent()
-	reduce := xp.CalcXpLose(utils.HoursOfUnix(time))
-	user.UpdateLastEvent()
 	user.Disconnect()
 	exp := xp.CalcExperienceFromVocal(user.TimeConnected)
 
@@ -39,14 +36,8 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 		utils.SendAlert("vocal.go - Querying/Creating copaing", result.Error.Error())
 		return
 	}
-	oldLvl := xp.CalcLevel(copaing.XP)
-	if int(copaing.XP)-int(reduce) < 0 {
-		copaing.XP = 0
-	} else {
-		copaing.XP -= reduce
-	}
-	copaing.XP += exp
-	if oldLvl != xp.CalcLevel(copaing.XP) {
+
+	if xp.NewXp(event.Member, &copaing, exp) {
 		xp.UpdateRolesNoMessage(&copaing, client)
 	}
 	result = sql.DB.Save(&copaing)

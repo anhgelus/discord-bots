@@ -1,7 +1,6 @@
 package events
 
 import (
-	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/anhgelus/discord-bots/les-copaings/src/xp"
@@ -14,10 +13,6 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	}
 	content := event.Message.Content
 	event.Member.User = event.Author
-	user := redis.GenerateConnectedUser(event.Member)
-	time := user.TimeSinceLastEvent()
-	reduce := xp.CalcXpLose(utils.HoursOfUnix(time))
-	user.UpdateLastEvent()
 	exp := xp.CalcExperience(calcPower(content))
 
 	copaing := sql.Copaing{UserID: event.Author.ID, GuildID: event.GuildID}
@@ -26,14 +21,8 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		utils.SendAlert("message.go - Querying/Creating copaing", result.Error.Error())
 		return
 	}
-	oldLvl := xp.CalcLevel(copaing.XP)
-	if int(copaing.XP)-int(reduce) < 0 {
-		copaing.XP = 0
-	} else {
-		copaing.XP -= reduce
-	}
-	copaing.XP += exp
-	if oldLvl != xp.CalcLevel(copaing.XP) {
+
+	if xp.NewXp(event.Member, &copaing, exp) {
 		err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
 		if err != nil {
 			utils.SendAlert("message.go - Reaction add", err.Error())
