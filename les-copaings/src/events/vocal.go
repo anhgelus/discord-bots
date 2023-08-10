@@ -30,8 +30,8 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	exp := xp.CalcExperienceFromVocal(user.TimeConnected)
 
 	copaing := sql.GetCopaing(event.UserID, event.GuildID)
-
-	if xp.NewXp(event.Member, &copaing, exp) {
+	data := xp.NewXp(event.Member, &copaing, exp)
+	if data.IsNewLevel {
 		xp.UpdateRolesNoMessage(&copaing, client)
 	}
 	sql.Save(&copaing)

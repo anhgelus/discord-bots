@@ -17,7 +17,8 @@ func CommandHandlers(s *discordgo.Session) {
 	s.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if h, ok := commandsHandler[i.ApplicationCommandData().Name]; ok {
 			copaing := sql.GetCopaing(i.Member.User.ID, i.GuildID)
-			if xp.NewXp(i.Member, &copaing, 0) {
+			data := xp.NewXp(i.Member, &copaing, 0)
+			if data.IsNewLevel {
 				xp.UpdateRolesNoMessage(&copaing, s)
 			}
 			sql.Save(&copaing)

@@ -16,11 +16,13 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	exp := xp.CalcExperience(calcPower(content))
 
 	copaing := sql.GetCopaing(event.Author.ID, event.GuildID)
-
-	if xp.NewXp(event.Member, &copaing, exp) {
-		err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
-		if err != nil {
-			utils.SendAlert("message.go - Reaction add", err.Error())
+	data := xp.NewXp(event.Member, &copaing, exp)
+	if data.IsNewLevel {
+		if data.LevelUp {
+			err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")
+			if err != nil {
+				utils.SendAlert("message.go - Reaction add", err.Error())
+			}
 		}
 		xp.UpdateRoles(&copaing, client, event)
 	}

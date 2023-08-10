@@ -35,7 +35,15 @@ func CalcXpLose(inactivity uint) uint {
 	return uint(math.Floor(0.01 * math.Pow(float64(inactivity), 2)))
 }
 
-func NewXp(member *discordgo.Member, copaing *sql.Copaing, exp uint) bool {
+type NewXpData struct {
+	IsNewLevel bool
+	OldLevel   uint
+	NewLevel   uint
+	LevelUp    bool
+	LevelDown  bool
+}
+
+func NewXp(member *discordgo.Member, copaing *sql.Copaing, exp uint) NewXpData {
 	user := redis.GenerateConnectedUser(member)
 	time := user.TimeSinceLastEvent()
 	reduce := CalcXpLose(utils.HoursOfUnix(time))
@@ -48,5 +56,13 @@ func NewXp(member *discordgo.Member, copaing *sql.Copaing, exp uint) bool {
 		copaing.XP -= reduce
 	}
 	copaing.XP += exp
-	return CalcLevel(copaing.XP) != oldLvl
+	lvl := CalcLevel(copaing.XP)
+	data := NewXpData{
+		IsNewLevel: lvl != oldLvl,
+		OldLevel:   oldLvl,
+		NewLevel:   lvl,
+		LevelUp:    oldLvl < lvl,
+		LevelDown:  oldLvl > lvl,
+	}
+	return data
 }
