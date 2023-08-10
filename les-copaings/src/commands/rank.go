@@ -37,6 +37,7 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		copaing.UserID = user.ID
 	} else {
 		hasOption = ok
+		member = i.Member
 		copaing = sql.Copaing{UserID: i.Member.User.ID, GuildID: i.GuildID}
 	}
 	result := sql.DB.FirstOrCreate(&copaing, copaing)
