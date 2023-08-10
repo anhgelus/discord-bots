@@ -13,9 +13,11 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 		return
 	}
 	content := event.Message.Content
+	event.Member.User = event.Author
 	user := redis.GenerateConnectedUser(event.Member)
 	time := user.TimeSinceLastEvent()
 	reduce := xp.CalcXpLose(utils.HoursOfUnix(time))
+	//println(event.Author.Username, reduce)
 	user.UpdateLastEvent()
 	exp := xp.CalcExperience(calcPower(content))
 
