@@ -24,10 +24,10 @@ func CalcLevel(xp uint) uint {
 }
 
 func CalcXpForLevel(level uint) uint {
-	// f(x)=0.1 x^0.5
-	// f(x)/0.1 = x^0.5
-	// (f(x)/0.1)^2 = x
-	return uint(math.Floor(math.Pow(10*float64(level), 2)))
+	// f(x)=0.2 x^0.5
+	// f(x)/0.2 = x^0.5
+	// (f(x)/0.2)^2 = x
+	return uint(math.Floor(math.Pow(20*float64(level), 2)))
 }
 
 func CalcXpLose(inactivity uint) uint {
