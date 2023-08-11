@@ -8,6 +8,7 @@ import (
 	"sync"
 )
 
+// UpdateRoles will update the role of the copaing and send a message
 func UpdateRoles(copaing *sql.Copaing, client *discordgo.Session, event *discordgo.MessageCreate) {
 	added, lost := updateRoles(copaing, client)
 	if added > 1 {
@@ -47,10 +48,12 @@ func UpdateRoles(copaing *sql.Copaing, client *discordgo.Session, event *discord
 	}
 }
 
+// UpdateRolesNoMessage will update the role of the copaing
 func UpdateRolesNoMessage(copaing *sql.Copaing, client *discordgo.Session) {
 	_, _ = updateRoles(copaing, client)
 }
 
+// updateRoles will update roles and return the total of modified role
 func updateRoles(copaing *sql.Copaing, client *discordgo.Session) (uint, uint) {
 	cfg := sql.Config{GuildID: copaing.GuildID}
 	sql.DB.Model(&sql.Config{}).Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(&cfg)
