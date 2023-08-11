@@ -11,7 +11,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	if event.Author.Bot {
 		return
 	}
-	content := event.Message.Content
+	content := utils.TrimMessage(event.Message.Content)
 	event.Member.User = event.Author
 	exp := xp.CalcExperience(calcPower(content))
 

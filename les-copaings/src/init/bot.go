@@ -114,67 +114,82 @@ func initCommands() {
 			},
 		},
 		Handler: cmd.Rank,
-	}, Cmd{
-		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "purge",
-			Description: "Purgez les membres",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "whitelist",
-					Description: "Les rôles que vous souhaitez garder (forme : `ID,ID,ID`)",
-					Required:    true,
-				},
-			},
-			DefaultMemberPermissions: &adminPerm,
-		},
-		Handler: cmd.Purge,
-	}, Cmd{
-		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "config",
-			Description: "Mise à jour de la configuration",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "id",
-					Description: "ID à mettre à jour",
-					Required:    true,
-					Choices: []*discordgo.ApplicationCommandOptionChoice{
-						{
-							Name:  "Rôles liés à l'XP",
-							Value: "xp-roles",
-						},
-						{
-							Name:  "Voir les paramètres",
-							Value: "show",
-						},
-						{
-							Name:  "Change le salon des news",
-							Value: "set-broadcast",
-						},
+	}, /*Cmd{
+			ApplicationCommand: discordgo.ApplicationCommand{
+				Name:        "reset_user_xp",
+				Description: "Reset l'XP d'un membre",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Type:        discordgo.ApplicationCommandOptionUser,
+						Name:        "membre",
+						Description: "Le membre a reset",
+						Required:    false,
 					},
 				},
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "value",
-					Description: "Nouvelle valeur",
-					Required:    false,
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "arg1",
-					Description: "Argument 1",
-					Required:    false,
-				},
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "arg2",
-					Description: "Argument 2",
-					Required:    false,
-				},
+				DefaultMemberPermissions: &adminPerm,
 			},
-			DefaultMemberPermissions: &adminPerm,
-		},
-		Handler: cmd.Config,
-	})
+			Handler: cmd.ResetUserXP,
+		}, */Cmd{
+			ApplicationCommand: discordgo.ApplicationCommand{
+				Name:        "purge",
+				Description: "Purgez les membres",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "whitelist",
+						Description: "Les rôles que vous souhaitez garder (forme : `ID,ID,ID`)",
+						Required:    true,
+					},
+				},
+				DefaultMemberPermissions: &adminPerm,
+			},
+			Handler: cmd.Purge,
+		}, Cmd{
+			ApplicationCommand: discordgo.ApplicationCommand{
+				Name:        "config",
+				Description: "Mise à jour de la configuration",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "id",
+						Description: "ID à mettre à jour",
+						Required:    true,
+						Choices: []*discordgo.ApplicationCommandOptionChoice{
+							{
+								Name:  "Rôles liés à l'XP",
+								Value: "xp-roles",
+							},
+							{
+								Name:  "Voir les paramètres",
+								Value: "show",
+							},
+							{
+								Name:  "Change le salon des news",
+								Value: "set-broadcast",
+							},
+						},
+					},
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "value",
+						Description: "Nouvelle valeur",
+						Required:    false,
+					},
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "arg1",
+						Description: "Argument 1",
+						Required:    false,
+					},
+					{
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "arg2",
+						Description: "Argument 2",
+						Required:    false,
+					},
+				},
+				DefaultMemberPermissions: &adminPerm,
+			},
+			Handler: cmd.Config,
+		})
 }
