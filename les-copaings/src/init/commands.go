@@ -23,7 +23,7 @@ func RegisterCommands(client *discordgo.Session) {
 			continue
 		}
 		registeredCommands[i] = cmd
-		utils.SendSuccess(fmt.Sprintf("[COMMAND] : %s initialized", v.Name))
+		utils.SendSuccess(fmt.Sprintf("[COMMAND]: %s initialized", v.Name))
 		o += 1
 	}
 	utils.SendSuccess(fmt.Sprintf("[Recaps] %d/%d commands has been loaded", o, len(cmds)))
