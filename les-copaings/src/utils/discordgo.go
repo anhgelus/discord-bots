@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// FetchGuildUser returns the list of member in a guild
 func FetchGuildUser(s *discordgo.Session, guildID string) []*discordgo.Member {
 	member, err := s.GuildMembers(guildID, "", 1000)
 	if err != nil {
