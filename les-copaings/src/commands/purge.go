@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-var removed = 0
-
 func Purge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := generateOptionMap(i)
 
