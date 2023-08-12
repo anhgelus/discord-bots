@@ -16,7 +16,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	exp := xp.CalcExperience(calcPower(content))
 
 	copaing := sql.GetCopaing(event.Author.ID, event.GuildID)
-	data := xp.NewXp(event.Member, &copaing, exp)
+	data := xp.NewXp(event.Member, &copaing, exp, true)
 	if data.IsNewLevel {
 		if data.LevelUp {
 			err := client.MessageReactionAdd(event.ChannelID, event.Message.ID, "⬆")

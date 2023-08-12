@@ -23,7 +23,7 @@ func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			utils.SendAlert("top.go - Failed to get member", err.Error())
 			return
 		}
-		xp.NewXp(member, &top, 0)
+		xp.NewXpNoUpdate(member, &top, 0)
 		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, member.User.Username, xp.CalcLevel(top.XP))
 	}
 	_, err = client.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
