@@ -25,7 +25,7 @@ func CommandHandlers(s *discordgo.Session) {
 				return
 			}
 			copaing := sql.GetCopaing(i.Member.User.ID, i.GuildID)
-			data := xp.NewXp(i.Member, &copaing, 0)
+			data := xp.NewXp(i.Member, &copaing, 0, true)
 			if data.IsNewLevel {
 				xp.UpdateRolesNoMessage(&copaing, s)
 			}
