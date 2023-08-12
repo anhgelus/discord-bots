@@ -14,7 +14,7 @@ func TrimMessage(s string) string {
 	if err != nil {
 		SendAlert("strings.go - Impossible to compile regex 'not'", err.Error())
 	}
-	ping, err = regexp.Compile("<@&?[0-9]{18}>")
+	ping, err = regexp.Compile("<(@&?|#)[0-9]{18}>")
 	if err != nil {
 		SendAlert("strings.go - Impossible to compile regex 'ping'", err.Error())
 	}
