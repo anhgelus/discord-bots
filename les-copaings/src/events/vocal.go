@@ -17,7 +17,7 @@ func ConnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUpdat
 	}
 	cfg := sql.Config{GuildID: event.GuildID}
 	sql.LoadConfig(&cfg)
-	if utils.AStringContains(cfg.DisabledXpChannel, event.ChannelID) {
+	if utils.AStringContains(cfg.DisabledXpChannelsSlice(), event.ChannelID) {
 		return
 	}
 	user := redis.GenerateConnectedUser(event.Member)
@@ -33,7 +33,7 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 	}
 	cfg := sql.Config{GuildID: event.GuildID}
 	sql.LoadConfig(&cfg)
-	if utils.AStringContains(cfg.DisabledXpChannel, event.ChannelID) {
+	if utils.AStringContains(cfg.DisabledXpChannelsSlice(), event.ChannelID) {
 		return
 	}
 	user := redis.GenerateConnectedUser(event.Member)

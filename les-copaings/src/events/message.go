@@ -13,7 +13,7 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	}
 	cfg := sql.Config{GuildID: event.GuildID}
 	sql.LoadConfig(&cfg)
-	if utils.AStringContains(cfg.DisabledXpChannel, event.ChannelID) {
+	if utils.AStringContains(cfg.DisabledXpChannelsSlice(), event.ChannelID) {
 		return
 	}
 	content := utils.TrimMessage(event.Message.Content)
