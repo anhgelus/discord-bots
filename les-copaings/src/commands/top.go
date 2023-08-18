@@ -10,35 +10,52 @@ import (
 )
 
 func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
-	var tops []sql.Copaing
-	sql.DB.Order("xp desc").Limit(10).Where("guild_id = ?", i.GuildID).Find(&tops)
-	var msg string
-	for i, top := range tops {
-		user, err := client.User(top.UserID)
-		if err != nil {
-			utils.SendAlert("top.go - Failed to get user", err.Error())
-			return
-		}
-		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, user.Username, xp.CalcLevel(top.XP))
+	err := respondLoadingInteraction(client, i)
+	if err != nil {
+		utils.SendAlert("top.go - Failed to make response defer", err.Error())
+		return
 	}
-	err := client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Title:       "Top",
-					Description: "Les membres les plus actifs du serveur !\n" + msg,
-					Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
-					Footer: &discordgo.MessageEmbedFooter{
-						Text: "© 2023 - Les Copaings",
-					},
-					Color:     utils.Success,
-					Timestamp: time.Now().Format(time.RFC3339),
+	msg := getTops(client, i)
+	_, err = client.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Embeds: &[]*discordgo.MessageEmbed{
+			{
+				Title:       "Top",
+				Description: "Les membres les plus actifs du serveur !\n" + msg,
+				Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
+				Footer: &discordgo.MessageEmbedFooter{
+					Text: "© 2023 - Les Copaings",
 				},
+				Color:     utils.Success,
+				Timestamp: time.Now().Format(time.RFC3339),
 			},
 		},
 	})
 	if err != nil {
 		utils.SendAlert("top.go - Respond interaction", err.Error())
 	}
+}
+
+func getTops(client *discordgo.Session, i *discordgo.InteractionCreate) string {
+	var tops, ntops []sql.Copaing
+	sql.DB.Order("xp desc").Limit(10).Where("guild_id = ?", i.GuildID).Find(&tops)
+	var msg string
+	for i, top := range tops {
+		member, err := client.GuildMember(top.GuildID, top.UserID)
+		if err != nil {
+			utils.SendAlert("top.go - Failed to get member", err.Error())
+			return ""
+		}
+		xp.NewXpNoUpdate(member, &top, 0)
+		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, member.User.Username, xp.CalcLevel(top.XP))
+	}
+	sql.DB.Order("xp desc").Limit(10).Where("guild_id = ?", i.GuildID).Find(&ntops)
+	if len(tops) != len(ntops) {
+		return getTops(client, i)
+	}
+	for in, t := range tops {
+		if t.ID != ntops[in].ID {
+			return getTops(client, i)
+		}
+	}
+	return msg
 }

@@ -6,8 +6,6 @@ import (
 	"strings"
 )
 
-var removed = 0
-
 func Purge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := generateOptionMap(i)
 
@@ -38,7 +36,7 @@ func Purge(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		utils.SendAlert("purge.go - Fetch members", "they are no members")
 		return
 	}
-	err = respondLoadingInteraction(s, i, "Je m'en occupe !")
+	err = respondLoadingInteraction(s, i)
 	if err != nil {
 		utils.SendAlert("purge.go - Failed to send loading", err.Error())
 		return

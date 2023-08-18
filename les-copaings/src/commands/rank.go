@@ -46,9 +46,11 @@ func Rank(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	data := xp.NewXp(member, &copaing, 0)
-	if data.IsNewLevel {
-		xp.UpdateRolesNoMessage(&copaing, client)
+	if hasOption {
+		data := xp.NewXpNoUpdate(member, &copaing, 0)
+		if data.IsNewLevel {
+			xp.UpdateRolesNoMessage(&copaing, client)
+		}
 	}
 
 	var msg string

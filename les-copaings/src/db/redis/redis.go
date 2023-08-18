@@ -21,6 +21,7 @@ type ConnectedUser struct {
 	GuildID       string
 	IsConnected   bool
 	TimeConnected uint
+	XpLostSaved   uint
 }
 
 var Credentials RedisCredentials
@@ -43,10 +44,26 @@ func GenerateConnectedUser(member *discordgo.Member) ConnectedUser {
 	guildID := member.GuildID
 	userID := member.User.ID
 	connect := client.Get(Ctx, genKey(guildID, userID, "connected"))
+	raw := client.Get(Ctx, genKey(guildID, userID, "xp_lost_saved"))
+	var xpLostSaved uint
+	if raw.Err() == redis.Nil {
+		xpLostSaved = 0
+	} else if raw.Err() == nil {
+		xpLostSavedStr := raw.Val()
+		t, err := strconv.Atoi(xpLostSavedStr)
+		if err != nil {
+			utils.SendAlert("redis.go - Str to Int Conversion for GenerateConnectedUser", err.Error())
+			return ConnectedUser{}
+		}
+		xpLostSaved = uint(t)
+	} else {
+		utils.SendAlert("redis.go - Error while fetching xp lost saved", raw.Err().Error())
+	}
 	user := ConnectedUser{
 		UserID:      userID,
 		GuildID:     guildID,
 		IsConnected: connect.Val() == "true",
+		XpLostSaved: xpLostSaved,
 	}
 	user.GenerateTimeConnected()
 	return user
@@ -90,7 +107,7 @@ func (user *ConnectedUser) GenerateTimeConnected() {
 	connectAtStr := client.Get(Ctx, genKey(user.GuildID, user.UserID, "connect_at"))
 	connectAt, err := strconv.Atoi(connectAtStr.Val())
 	if err != nil {
-		utils.SendAlert("redis.go - Str to Int Conversion", err.Error())
+		utils.SendAlert("redis.go - Str to Int Conversion for Time Connected", err.Error())
 		return
 	}
 	user.TimeConnected = CalcTime(uint(connectAt))
@@ -101,6 +118,7 @@ func (user *ConnectedUser) UpdateLastEvent() {
 	defer client.Close()
 
 	client.Set(Ctx, user.genKey("last_event"), time.Now().Unix(), 0)
+	client.Del(Ctx, user.genKey("xp_lost_saved"))
 }
 
 func (user *ConnectedUser) TimeSinceLastEvent() int64 {
@@ -119,9 +137,18 @@ func (user *ConnectedUser) TimeSinceLastEvent() int64 {
 	return time.Now().Unix() - int64(last)
 }
 
+func (user *ConnectedUser) UpdateLostXp(xp uint) {
+	client, _ := Credentials.GetClient()
+	defer client.Close()
+
+	user.XpLostSaved += xp
+
+	client.Set(Ctx, user.genKey("xp_lost_saved"), fmt.Sprintf("%d", user.XpLostSaved), 0)
+}
+
 func CalcTime(connectAt uint) uint {
 	timeConnected := uint(time.Now().Unix() - int64(connectAt))
-	// Limit the time connect to 6 hours
+	// Limit the time connected to 6 hours
 	if 21600 < timeConnected {
 		return 21600
 	}
