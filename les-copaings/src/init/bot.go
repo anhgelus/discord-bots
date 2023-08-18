@@ -167,6 +167,10 @@ func initCommands() {
 							Name:  "Change le salon des news",
 							Value: "set-broadcast",
 						},
+						{
+							Name:  "Salons où l'XP est désactivée",
+							Value: "disabled-xp-channels",
+						},
 					},
 				},
 				{

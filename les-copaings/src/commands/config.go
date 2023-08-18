@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	configs    = []string{"xp-roles", "show", "set-broadcast"}
-	subXpRoles = []string{"add", "edit", "remove"}
+	configs   = []string{"xp-roles", "show", "set-broadcast", "disabled-xp-channels"}
+	subManage = []string{"add", "edit", "remove"}
 )
 
 type configData struct {
@@ -71,6 +71,8 @@ func Config(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		data.xpRoles(client, i)
 	case "set-broadcast":
 		data.setBroadcast(client, i)
+	case "disabled-xp-channels":
+		data.disabledXpChannels(client, i)
 	default:
 		utils.SendAlert("config.go - Switch id", "not handled "+data.id)
 	}
@@ -80,7 +82,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	valid := false
 	msg := ""
 
-	for _, o := range subXpRoles {
+	for _, o := range subManage {
 		msg += o + ", "
 		if o == data.value {
 			valid = true
@@ -114,7 +116,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	}
 
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	if data.value == "remove" {
 		for id, xpr := range cfg.XpRoles {
@@ -165,9 +167,81 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	}
 }
 
+func (data *configData) disabledXpChannels(client *discordgo.Session, i *discordgo.InteractionCreate) {
+	valid := false
+	msg := ""
+
+	for _, o := range subManage {
+		msg += o + ", "
+		if o == data.value {
+			valid = true
+		}
+	}
+	if !valid {
+		err := respondEphemeralInteraction(client, i, "L'argument value est invalide.\nValeurs possibles : "+msg[:len(msg)-2])
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction invalid value", err.Error())
+		}
+		return
+	}
+
+	if opt, ok := data.options["arg1"]; ok {
+		data.arg1 = opt.StringValue()
+	} else {
+		err := respondEphemeralInteraction(client, i, "L'argument arg1 n'a pas été renseigné")
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction arg1", err.Error())
+		}
+		return
+	}
+
+	role, err := client.Channel(data.arg1)
+	if role == nil || err != nil {
+		err = respondEphemeralInteraction(client, i, "Impossible de trouver le salon "+data.arg1)
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction invalid arg1", err.Error())
+		}
+		return
+	}
+
+	cfg := sql.Config{GuildID: i.GuildID}
+	sql.LoadConfig(&cfg)
+
+	dXpChan := cfg.DisabledXpChannelsSlice()
+
+	if data.value == "remove" {
+		for id, dxp := range dXpChan {
+			if dxp != data.arg1 {
+				continue
+			}
+			dXpChan = append(dXpChan[:id], dXpChan[id+1:]...)
+		}
+		cfg.DisabledXpChannelsString(dXpChan)
+		sql.Save(&cfg)
+		return
+	}
+
+	switch data.value {
+	case "add":
+		dXpChan = append(dXpChan, data.arg1)
+		cfg.DisabledXpChannelsString(dXpChan)
+	case "edit":
+		err = respondInteraction(client, i, "Edit n'est pas supporté !")
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction value saved", err.Error())
+		}
+		return
+	}
+	sql.Save(&cfg)
+	err = respondInteraction(client, i, "Valeur enregistrée !")
+	if err != nil {
+		utils.SendAlert("config.go - Respond interaction value saved", err.Error())
+	}
+}
+
 func (data *configData) setBroadcast(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	_, err := client.Channel(data.value)
 	if err != nil {
@@ -188,7 +262,7 @@ func (data *configData) setBroadcast(client *discordgo.Session, i *discordgo.Int
 
 func (data *configData) showConfig(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	var embeds []*discordgo.MessageEmbed
 
@@ -236,7 +310,29 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 		xpRoles.Fields = append(xpRoles.Fields, &field)
 	}
 
-	embeds = append(embeds, &main, &xpRoles)
+	disabledXpChannels := discordgo.MessageEmbed{
+		Title:       "Salons sans XP",
+		Description: "Liste des salons:\n",
+		Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "© 2023 - Les Copaings",
+		},
+		Color:     utils.Success,
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+	for _, dxp := range cfg.DisabledXpChannelsSlice() {
+		if len(dxp) == 0 {
+			continue
+		}
+		field := discordgo.MessageEmbedField{
+			Name:   "",
+			Value:  fmt.Sprintf("<#%s>", dxp),
+			Inline: false,
+		}
+		disabledXpChannels.Fields = append(disabledXpChannels.Fields, &field)
+	}
+
+	embeds = append(embeds, &main, &xpRoles, &disabledXpChannels)
 
 	err := client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -248,8 +344,4 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 	if err != nil {
 		utils.SendAlert("config.go - Respond interaction show", err.Error())
 	}
-}
-
-func loadConfig(cfg *sql.Config) {
-	sql.DB.Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(cfg)
 }

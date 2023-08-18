@@ -11,6 +11,11 @@ func MessageSent(client *discordgo.Session, event *discordgo.MessageCreate) {
 	if event.Author.Bot {
 		return
 	}
+	cfg := sql.Config{GuildID: event.GuildID}
+	sql.LoadConfig(&cfg)
+	if utils.AStringContains(cfg.DisabledXpChannelsSlice(), event.ChannelID) {
+		return
+	}
 	content := utils.TrimMessage(event.Message.Content)
 	event.Member.User = event.Author
 	exp := xp.CalcExperience(calcPower(content))

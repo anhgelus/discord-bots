@@ -2,6 +2,7 @@ package sql
 
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
+	"strings"
 )
 
 func GetNewRoles(copaing *Copaing, cfg *Config, roles []string, c chan<- string, n chan<- string) {
@@ -38,4 +39,17 @@ func Save(i interface{}) {
 		utils.SendAlert("message.go - Save copaing", result.Error.Error())
 		return
 	}
+}
+
+func LoadConfig(cfg *Config) {
+	DB.Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(cfg)
+}
+
+func (cfg *Config) DisabledXpChannelsSlice() []string {
+	return strings.Split(cfg.DisabledXpChannel, ",")
+}
+
+func (cfg *Config) DisabledXpChannelsString(slice []string) string {
+	cfg.DisabledXpChannel = strings.Join(slice, ",")
+	return cfg.DisabledXpChannel
 }
