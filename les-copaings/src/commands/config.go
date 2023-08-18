@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	configs    = []string{"xp-roles", "show", "set-broadcast"}
-	subXpRoles = []string{"add", "edit", "remove"}
+	configs   = []string{"xp-roles", "show", "set-broadcast", "disabled-xp-channels"}
+	subManage = []string{"add", "edit", "remove"}
 )
 
 type configData struct {
@@ -71,6 +71,8 @@ func Config(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		data.xpRoles(client, i)
 	case "set-broadcast":
 		data.setBroadcast(client, i)
+	case "disabled-xp-channels":
+		data.disabledXpChannels(client, i)
 	default:
 		utils.SendAlert("config.go - Switch id", "not handled "+data.id)
 	}
@@ -80,7 +82,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	valid := false
 	msg := ""
 
-	for _, o := range subXpRoles {
+	for _, o := range subManage {
 		msg += o + ", "
 		if o == data.value {
 			valid = true
@@ -157,6 +159,74 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 			xpr.XP = xP
 			cfg.XpRoles[id] = xpr
 		}
+	}
+	sql.Save(&cfg)
+	err = respondInteraction(client, i, "Valeur enregistrée !")
+	if err != nil {
+		utils.SendAlert("config.go - Respond interaction value saved", err.Error())
+	}
+}
+
+func (data *configData) disabledXpChannels(client *discordgo.Session, i *discordgo.InteractionCreate) {
+	valid := false
+	msg := ""
+
+	for _, o := range subManage {
+		msg += o + ", "
+		if o == data.value {
+			valid = true
+		}
+	}
+	if !valid {
+		err := respondEphemeralInteraction(client, i, "L'argument value est invalide.\nValeurs possibles : "+msg[:len(msg)-2])
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction invalid value", err.Error())
+		}
+		return
+	}
+
+	if opt, ok := data.options["arg1"]; ok {
+		data.arg1 = opt.StringValue()
+	} else {
+		err := respondEphemeralInteraction(client, i, "L'argument arg1 n'a pas été renseigné")
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction arg1", err.Error())
+		}
+		return
+	}
+
+	role, err := client.Channel(data.arg1)
+	if role == nil || err != nil {
+		err = respondEphemeralInteraction(client, i, "Impossible de trouver le salon "+data.arg1)
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction invalid arg1", err.Error())
+		}
+		return
+	}
+
+	cfg := sql.Config{GuildID: i.GuildID}
+	loadConfig(&cfg)
+
+	if data.value == "remove" {
+		for id, dxp := range cfg.DisabledXpChannel {
+			if dxp != data.arg1 {
+				continue
+			}
+			cfg.XpRoles = append(cfg.XpRoles[:id], cfg.XpRoles[id+1:]...)
+		}
+		sql.Save(&cfg)
+		return
+	}
+
+	switch data.value {
+	case "add":
+		cfg.DisabledXpChannel = append(cfg.DisabledXpChannel, data.arg1)
+	case "edit":
+		err = respondInteraction(client, i, "Edit n'est pas supporté !")
+		if err != nil {
+			utils.SendAlert("config.go - Respond interaction value saved", err.Error())
+		}
+		return
 	}
 	sql.Save(&cfg)
 	err = respondInteraction(client, i, "Valeur enregistrée !")
