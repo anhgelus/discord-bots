@@ -39,3 +39,7 @@ func Save(i interface{}) {
 		return
 	}
 }
+
+func LoadConfig(cfg *Config) {
+	DB.Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(cfg)
+}

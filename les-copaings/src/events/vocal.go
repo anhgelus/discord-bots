@@ -3,6 +3,7 @@ package events
 import (
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/redis"
 	"github.com/anhgelus/discord-bots/les-copaings/src/db/sql"
+	"github.com/anhgelus/discord-bots/les-copaings/src/utils"
 	"github.com/anhgelus/discord-bots/les-copaings/src/xp"
 	"github.com/bwmarrin/discordgo"
 )
@@ -14,6 +15,11 @@ func ConnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUpdat
 	if event.Member.User.Bot {
 		return
 	}
+	cfg := sql.Config{GuildID: event.GuildID}
+	sql.LoadConfig(&cfg)
+	if utils.AStringContains(cfg.DisabledXpChannel, event.ChannelID) {
+		return
+	}
 	user := redis.GenerateConnectedUser(event.Member)
 	user.Connect()
 }
@@ -23,6 +29,11 @@ func DisconnectionVocal(client *discordgo.Session, event *discordgo.VoiceStateUp
 		return
 	}
 	if event.Member.User.Bot {
+		return
+	}
+	cfg := sql.Config{GuildID: event.GuildID}
+	sql.LoadConfig(&cfg)
+	if utils.AStringContains(cfg.DisabledXpChannel, event.ChannelID) {
 		return
 	}
 	user := redis.GenerateConnectedUser(event.Member)

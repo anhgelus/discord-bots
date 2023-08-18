@@ -116,7 +116,7 @@ func (data *configData) xpRoles(client *discordgo.Session, i *discordgo.Interact
 	}
 
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	if data.value == "remove" {
 		for id, xpr := range cfg.XpRoles {
@@ -205,7 +205,7 @@ func (data *configData) disabledXpChannels(client *discordgo.Session, i *discord
 	}
 
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	if data.value == "remove" {
 		for id, dxp := range cfg.DisabledXpChannel {
@@ -237,7 +237,7 @@ func (data *configData) disabledXpChannels(client *discordgo.Session, i *discord
 
 func (data *configData) setBroadcast(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	_, err := client.Channel(data.value)
 	if err != nil {
@@ -258,7 +258,7 @@ func (data *configData) setBroadcast(client *discordgo.Session, i *discordgo.Int
 
 func (data *configData) showConfig(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	cfg := sql.Config{GuildID: i.GuildID}
-	loadConfig(&cfg)
+	sql.LoadConfig(&cfg)
 
 	var embeds []*discordgo.MessageEmbed
 
@@ -318,8 +318,4 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 	if err != nil {
 		utils.SendAlert("config.go - Respond interaction show", err.Error())
 	}
-}
-
-func loadConfig(cfg *sql.Config) {
-	sql.DB.Where("guild_id = ?", cfg.GuildID).Preload("XpRoles").FirstOrCreate(cfg)
 }
