@@ -306,7 +306,26 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 		xpRoles.Fields = append(xpRoles.Fields, &field)
 	}
 
-	embeds = append(embeds, &main, &xpRoles)
+	disabledXpChannels := discordgo.MessageEmbed{
+		Title:       "Salons sans XP",
+		Description: "Liste des salons:\n",
+		Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "© 2023 - Les Copaings",
+		},
+		Color:     utils.Success,
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+	for _, dxp := range cfg.DisabledXpChannel {
+		field := discordgo.MessageEmbedField{
+			Name:   "",
+			Value:  fmt.Sprintf("<&%s>", dxp),
+			Inline: false,
+		}
+		disabledXpChannels.Fields = append(disabledXpChannels.Fields, &field)
+	}
+
+	embeds = append(embeds, &main, &xpRoles, &disabledXpChannels)
 
 	err := client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
