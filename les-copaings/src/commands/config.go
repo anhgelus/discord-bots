@@ -207,20 +207,24 @@ func (data *configData) disabledXpChannels(client *discordgo.Session, i *discord
 	cfg := sql.Config{GuildID: i.GuildID}
 	sql.LoadConfig(&cfg)
 
+	dXpChan := cfg.DisabledXpChannelsSlice()
+
 	if data.value == "remove" {
-		for id, dxp := range cfg.DisabledXpChannel {
+		for id, dxp := range dXpChan {
 			if dxp != data.arg1 {
 				continue
 			}
-			cfg.XpRoles = append(cfg.XpRoles[:id], cfg.XpRoles[id+1:]...)
+			dXpChan = append(dXpChan[:id], dXpChan[id+1:]...)
 		}
+		cfg.DisabledXpChannelsString(dXpChan)
 		sql.Save(&cfg)
 		return
 	}
 
 	switch data.value {
 	case "add":
-		cfg.DisabledXpChannel = append(cfg.DisabledXpChannel, data.arg1)
+		dXpChan = append(dXpChan, data.arg1)
+		cfg.DisabledXpChannelsString(dXpChan)
 	case "edit":
 		err = respondInteraction(client, i, "Edit n'est pas supporté !")
 		if err != nil {

@@ -16,7 +16,7 @@ type Config struct {
 	GuildID           string `gorm:"not null"`
 	XpRoles           []XpRole
 	BroadcastChannel  string
-	DisabledXpChannel []string
+	DisabledXpChannel string
 }
 
 type XpRole struct {
