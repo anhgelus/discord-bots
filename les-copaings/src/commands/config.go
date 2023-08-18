@@ -320,10 +320,13 @@ func (data *configData) showConfig(client *discordgo.Session, i *discordgo.Inter
 		Color:     utils.Success,
 		Timestamp: time.Now().Format(time.RFC3339),
 	}
-	for _, dxp := range cfg.DisabledXpChannel {
+	for _, dxp := range cfg.DisabledXpChannelsSlice() {
+		if len(dxp) == 0 {
+			continue
+		}
 		field := discordgo.MessageEmbedField{
 			Name:   "",
-			Value:  fmt.Sprintf("<&%s>", dxp),
+			Value:  fmt.Sprintf("<#%s>", dxp),
 			Inline: false,
 		}
 		disabledXpChannels.Fields = append(disabledXpChannels.Fields, &field)
