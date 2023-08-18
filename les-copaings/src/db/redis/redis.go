@@ -48,7 +48,7 @@ func GenerateConnectedUser(member *discordgo.Member) ConnectedUser {
 	var xpLostSaved uint
 	if raw.Err() == redis.Nil {
 		xpLostSaved = 0
-	} else if raw.Err() != nil {
+	} else if raw.Err() == nil {
 		xpLostSavedStr := raw.Val()
 		t, err := strconv.Atoi(xpLostSavedStr)
 		if err != nil {
@@ -118,6 +118,7 @@ func (user *ConnectedUser) UpdateLastEvent() {
 	defer client.Close()
 
 	client.Set(Ctx, user.genKey("last_event"), time.Now().Unix(), 0)
+	client.Del(Ctx, user.genKey("xp_lost_saved"))
 }
 
 func (user *ConnectedUser) TimeSinceLastEvent() int64 {
@@ -147,7 +148,7 @@ func (user *ConnectedUser) UpdateLostXp(xp uint) {
 
 func CalcTime(connectAt uint) uint {
 	timeConnected := uint(time.Now().Unix() - int64(connectAt))
-	// Limit the time connect to 6 hours
+	// Limit the time connected to 6 hours
 	if 21600 < timeConnected {
 		return 21600
 	}

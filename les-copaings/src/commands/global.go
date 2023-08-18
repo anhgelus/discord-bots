@@ -23,7 +23,7 @@ func respondEphemeralInteraction(client *discordgo.Session, i *discordgo.Interac
 
 func respondLoadingInteraction(client *discordgo.Session, i *discordgo.InteractionCreate) error {
 	return client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseDeferredMessageUpdate,
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 	})
 }
 
