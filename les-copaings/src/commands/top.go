@@ -15,24 +15,26 @@ func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		utils.SendAlert("top.go - Failed to make response defer", err.Error())
 		return
 	}
-	msg := getTops(client, i)
-	_, err = client.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
-		Embeds: &[]*discordgo.MessageEmbed{
-			{
-				Title:       "Top",
-				Description: "Les membres les plus actifs du serveur !\n" + msg,
-				Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
-				Footer: &discordgo.MessageEmbedFooter{
-					Text: "© 2023 - Les Copaings",
+	go func() {
+		m := getTops(client, i)
+		_, err = client.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			Embeds: &[]*discordgo.MessageEmbed{
+				{
+					Title:       "Top",
+					Description: "Les membres les plus actifs du serveur !\n" + m,
+					Author:      &discordgo.MessageEmbedAuthor{Name: i.Member.User.Username},
+					Footer: &discordgo.MessageEmbedFooter{
+						Text: "© 2023 - Les Copaings",
+					},
+					Color:     utils.Success,
+					Timestamp: time.Now().Format(time.RFC3339),
 				},
-				Color:     utils.Success,
-				Timestamp: time.Now().Format(time.RFC3339),
 			},
-		},
-	})
-	if err != nil {
-		utils.SendAlert("top.go - Respond interaction", err.Error())
-	}
+		})
+		if err != nil {
+			utils.SendAlert("top.go - Respond interaction", err.Error())
+		}
+	}()
 }
 
 func getTops(client *discordgo.Session, i *discordgo.InteractionCreate) string {
