@@ -131,6 +131,27 @@ func initCommands() {
 		Handler: cmd.ResetUserXP,
 	}, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "set_level",
+			Description: "Modifie le niveau d'un membre",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "membre",
+					Description: "Le membre a modifié",
+					Required:    true,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "level",
+					Description: "Le niveau",
+					Required:    true,
+				},
+			},
+			DefaultMemberPermissions: &adminPerm,
+		},
+		Handler: cmd.SetLevel,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "purge",
 			Description: "Purgez les membres",
 			Options: []*discordgo.ApplicationCommandOption{
