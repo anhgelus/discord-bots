@@ -9,6 +9,7 @@ type Copaing struct {
 	UserID  string `gorm:"not null"`
 	GuildID string `gorm:"not null"`
 	XP      uint   `gorm:"default:0"`
+	OldXP   uint   `gorm:"default:0"`
 }
 
 type Config struct {

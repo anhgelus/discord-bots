@@ -19,3 +19,18 @@ func GuildDelete(s *discordgo.Session, event *discordgo.GuildDelete) {
 	sql.DB.Model(sql.Config{}).Where("guild_id = ?", guildID).Delete(sql.Config{})
 	client.Close()
 }
+
+func GuildMemberLeave(s *discordgo.Session, event *discordgo.GuildMemberRemove) {
+	copaing := sql.Copaing{GuildID: event.GuildID, UserID: event.User.ID}
+	sql.DB.FirstOrCreate(&copaing)
+	copaing.OldXP = copaing.XP
+	copaing.XP = 0
+	sql.Save(&copaing)
+}
+
+func GuildMemberJoin(s *discordgo.Session, event *discordgo.GuildMemberAdd) {
+	copaing := sql.Copaing{GuildID: event.GuildID, UserID: event.User.ID}
+	sql.DB.FirstOrCreate(&copaing)
+	copaing.XP = copaing.OldXP
+	sql.Save(&copaing)
+}

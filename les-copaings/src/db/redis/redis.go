@@ -146,6 +146,10 @@ func (user *ConnectedUser) UpdateLostXp(xp uint) {
 	client.Set(Ctx, user.genKey("xp_lost_saved"), fmt.Sprintf("%d", user.XpLostSaved), 0)
 }
 
+func (user *ConnectedUser) LeaveGuild() {
+
+}
+
 func CalcTime(connectAt uint) uint {
 	timeConnected := uint(time.Now().Unix() - int64(connectAt))
 	// Limit the time connected to 6 hours

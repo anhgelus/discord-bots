@@ -58,6 +58,8 @@ func Bot(token string) {
 	dg.AddHandler(event.DisconnectionVocal)
 	dg.AddHandler(event.GuildCreate)
 	dg.AddHandler(event.GuildDelete)
+	dg.AddHandler(event.GuildMemberJoin)
+	dg.AddHandler(event.GuildMemberLeave) // event for leave, ban and kick
 
 	dg.Identify.Intents = discordgo.IntentsAll
 
