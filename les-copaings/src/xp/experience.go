@@ -16,8 +16,8 @@ func CalcExperience(length uint, diversity uint) uint {
 
 // CalcExperienceFromVocal returns the experience gained from a vocal session's length
 func CalcExperienceFromVocal(length uint) uint {
-	// f(x)=((0.25 x^{1.3})/(60000))+1
-	return uint(math.Floor(((0.25 * math.Pow(float64(length), 1.3)) / 60000) + 1))
+	// f(x)=(0.01 x^{1.3})+1
+	return uint(math.Floor(0.01*math.Pow(float64(length), 1.3) + 1))
 }
 
 // CalcLevel with given xp
