@@ -45,7 +45,8 @@ func getTops(client *discordgo.Session, i *discordgo.InteractionCreate) string {
 		member, err := client.GuildMember(top.GuildID, top.UserID)
 		if err != nil {
 			utils.SendAlert("top.go - Failed to get member", err.Error())
-			return ""
+			msg += fmt.Sprintf("%d. **<@%s>** - niveau : %d\n", i+1, top.UserID, xp.CalcLevel(top.XP))
+			continue
 		}
 		xp.NewXpNoUpdate(member, &top, 0)
 		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, member.User.Username, xp.CalcLevel(top.XP))
