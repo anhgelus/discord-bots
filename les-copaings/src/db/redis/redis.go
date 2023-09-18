@@ -65,6 +65,10 @@ func GenerateConnectedUser(member *discordgo.Member) ConnectedUser {
 		IsConnected: connect.Val() == "true",
 		XpLostSaved: xpLostSaved,
 	}
+	last := client.Get(Ctx, user.genKey("last_event"))
+	if last.Err() == redis.Nil {
+		user.UpdateLastEvent()
+	}
 	user.GenerateTimeConnected()
 	return user
 }
