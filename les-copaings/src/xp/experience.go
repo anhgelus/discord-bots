@@ -36,8 +36,10 @@ func CalcXpForLevel(level uint) uint {
 
 // CalcXpLose returns the xp to remove with the inactivity length (hour)
 func CalcXpLose(inactivity uint) uint {
-	// f(x)= 0.01x^2
-	return uint(math.Floor(0.01 * math.Pow(float64(inactivity), 2)))
+	// f(x)= x^2*10^{-2+ln(x/85)}
+	return uint(math.Floor(
+		math.Pow(float64(inactivity), 2) * math.Pow(10, -2+math.Log(float64(inactivity/85))),
+	))
 }
 
 // NewXpData stores data returned by NewXp
