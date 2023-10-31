@@ -169,6 +169,21 @@ func initCommands() {
 		Handler: cmd.Purge,
 	}, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "remove_user_id",
+			Description: "Retire un utilisateur de la base de donnée",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Name:        "id",
+					Description: "Le user_id a retiré",
+					Required:    true,
+				},
+			},
+			DefaultMemberPermissions: &adminPerm,
+		},
+		Handler: cmd.RemoveUserId,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "config",
 			Description: "Mise à jour de la configuration",
 			Options: []*discordgo.ApplicationCommandOption{
