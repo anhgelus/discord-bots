@@ -173,7 +173,7 @@ func initCommands() {
 			Description: "Retire un utilisateur de la base de donnée",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
-					Type:        discordgo.ApplicationCommandOptionInteger,
+					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "id",
 					Description: "Le user_id a retiré",
 					Required:    true,
