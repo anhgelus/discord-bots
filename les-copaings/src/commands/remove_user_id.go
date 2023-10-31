@@ -11,7 +11,7 @@ func RemoveUserId(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	optionMap := generateOptionMap(i)
 
 	if opt, ok := optionMap["id"]; ok {
-		err := sql.DB.Model(&sql.Copaing{}).Delete(&sql.Copaing{}).Where("user_id = ?", opt.Value).Error
+		err := sql.DB.Model(&sql.Copaing{}).Where("user_id = ? AND guild_id = ?", opt.Value, i.GuildID).Delete(&sql.Copaing{}).Error
 		if err != nil {
 			utils.SendAlert("remove_user_id.go", err.Error())
 		}
