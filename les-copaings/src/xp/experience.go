@@ -60,7 +60,7 @@ type NewXpData struct {
 func NewXp(member *discordgo.Member, copaing *sql.Copaing, exp uint, update bool) NewXpData {
 	user := redis.GenerateConnectedUser(member)
 	time := user.TimeSinceLastEvent()
-	r := int(CalcXpLose(utils.HoursOfUnix(time)) - user.XpLostSaved)
+	r := int(CalcXpLose(utils.HoursOfUnix(time))) - int(user.XpLostSaved)
 	if r < 0 {
 		utils.SendAlert("experience.go - NewXP calc reduce", "Reduce is bellow 0")
 		return NewXpData{}
@@ -73,12 +73,12 @@ func NewXp(member *discordgo.Member, copaing *sql.Copaing, exp uint, update bool
 	}
 
 	oldLvl := CalcLevel(copaing.XP)
-	if int(copaing.XP)-int(reduce) < 0 {
+	copaing.XP += exp
+	if int(copaing.XP)-r < 0 {
 		copaing.XP = 0
 	} else {
 		copaing.XP -= reduce
 	}
-	copaing.XP += exp
 	sql.Save(copaing)
 	lvl := CalcLevel(copaing.XP)
 	data := NewXpData{

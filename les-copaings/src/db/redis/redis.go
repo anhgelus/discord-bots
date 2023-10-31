@@ -28,6 +28,13 @@ var Credentials RedisCredentials
 
 var Ctx = context.Background()
 
+const (
+	xpLostSavedKey = "xp_lost_saved"
+	connectedKey   = "connected"
+	connectAtKey   = "connect_at"
+	lastEventKey   = "last_event"
+)
+
 func (rc *RedisCredentials) GetClient() (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     rc.Address,
@@ -43,8 +50,8 @@ func GenerateConnectedUser(member *discordgo.Member) ConnectedUser {
 	defer client.Close()
 	guildID := member.GuildID
 	userID := member.User.ID
-	connect := client.Get(Ctx, genKey(guildID, userID, "connected"))
-	raw := client.Get(Ctx, genKey(guildID, userID, "xp_lost_saved"))
+	connect := client.Get(Ctx, genKey(guildID, userID, connectedKey))
+	raw := client.Get(Ctx, genKey(guildID, userID, xpLostSavedKey))
 	var xpLostSaved uint
 	if raw.Err() == redis.Nil {
 		xpLostSaved = 0
@@ -65,7 +72,7 @@ func GenerateConnectedUser(member *discordgo.Member) ConnectedUser {
 		IsConnected: connect.Val() == "true",
 		XpLostSaved: xpLostSaved,
 	}
-	last := client.Get(Ctx, user.genKey("last_event"))
+	last := client.Get(Ctx, user.genKey(lastEventKey))
 	if last.Err() == redis.Nil {
 		user.UpdateLastEvent()
 	}
@@ -78,8 +85,8 @@ func (user *ConnectedUser) Connect() {
 	defer client.Close()
 	user.IsConnected = true
 	user.TimeConnected = 0
-	client.Set(Ctx, user.genKey("connected"), "true", 0)
-	client.Set(Ctx, user.genKey("connect_at"), time.Now().Unix(), 0)
+	client.Set(Ctx, user.genKey(connectedKey), "true", 0)
+	client.Set(Ctx, user.genKey(connectAtKey), time.Now().Unix(), 0)
 }
 
 func (user *ConnectedUser) Disconnect() {
@@ -89,8 +96,8 @@ func (user *ConnectedUser) Disconnect() {
 	user.GenerateTimeConnected()
 	user.IsConnected = false
 
-	client.Set(Ctx, user.genKey("connected"), "true", 0)
-	client.Set(Ctx, user.genKey("connect_at"), 0, 0)
+	client.Set(Ctx, user.genKey(connectedKey), "false", 0)
+	client.Set(Ctx, user.genKey(connectAtKey), 0, 0)
 }
 
 func genKey(guildID string, userID string, ext string) string {
@@ -108,7 +115,7 @@ func (user *ConnectedUser) GenerateTimeConnected() {
 	}
 	client, _ := Credentials.GetClient()
 	defer client.Close()
-	connectAtStr := client.Get(Ctx, genKey(user.GuildID, user.UserID, "connect_at"))
+	connectAtStr := client.Get(Ctx, genKey(user.GuildID, user.UserID, connectAtKey))
 	connectAt, err := strconv.Atoi(connectAtStr.Val())
 	if err != nil {
 		utils.SendAlert("redis.go - Str to Int Conversion for Time Connected", err.Error())
@@ -121,15 +128,15 @@ func (user *ConnectedUser) UpdateLastEvent() {
 	client, _ := Credentials.GetClient()
 	defer client.Close()
 
-	client.Set(Ctx, user.genKey("last_event"), time.Now().Unix(), 0)
-	client.Del(Ctx, user.genKey("xp_lost_saved"))
+	client.Set(Ctx, user.genKey(lastEventKey), time.Now().Unix(), 0)
+	client.Del(Ctx, user.genKey(xpLostSavedKey))
 }
 
 func (user *ConnectedUser) TimeSinceLastEvent() int64 {
 	client, _ := Credentials.GetClient()
 	defer client.Close()
 
-	lastStr := client.Get(Ctx, user.genKey("last_event"))
+	lastStr := client.Get(Ctx, user.genKey(lastEventKey))
 	if lastStr.Err() == redis.Nil {
 		return 0
 	}
@@ -147,7 +154,7 @@ func (user *ConnectedUser) UpdateLostXp(xp uint) {
 
 	user.XpLostSaved += xp
 
-	client.Set(Ctx, user.genKey("xp_lost_saved"), fmt.Sprintf("%d", user.XpLostSaved), 0)
+	client.Set(Ctx, user.genKey(xpLostSavedKey), fmt.Sprintf("%d", user.XpLostSaved), 0)
 }
 
 func (user *ConnectedUser) LeaveGuild() {

@@ -38,9 +38,10 @@ func Top(client *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func getTops(client *discordgo.Session, i *discordgo.InteractionCreate) string {
-	var tops, ntops []sql.Copaing
+	var tops []sql.Copaing
 	sql.DB.Order("xp desc").Limit(10).Where("guild_id = ?", i.GuildID).Find(&tops)
 	var msg string
+	reload := false
 	for i, top := range tops {
 		member, err := client.GuildMember(top.GuildID, top.UserID)
 		if err != nil {
@@ -48,17 +49,14 @@ func getTops(client *discordgo.Session, i *discordgo.InteractionCreate) string {
 			msg += fmt.Sprintf("%d. **<@%s>** - niveau : %d\n", i+1, top.UserID, xp.CalcLevel(top.XP))
 			continue
 		}
-		xp.NewXpNoUpdate(member, &top, 0)
+		data := xp.NewXpNoUpdate(member, &top, 0)
+		if data.IsNewLevel {
+			reload = true
+		}
 		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, member.User.Username, xp.CalcLevel(top.XP))
 	}
-	sql.DB.Order("xp desc").Limit(10).Where("guild_id = ?", i.GuildID).Find(&ntops)
-	if len(tops) != len(ntops) {
+	if reload {
 		return getTops(client, i)
-	}
-	for in, t := range tops {
-		if t.ID != ntops[in].ID {
-			return getTops(client, i)
-		}
 	}
 	return msg
 }

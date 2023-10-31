@@ -69,7 +69,7 @@ func Bot(token string) {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	err = dg.Close() // Bot Shutown
+	err = dg.Close() // Bot Shutdown
 	if err != nil {
 		utils.SendAlert("bot.go - Shutdown", err.Error())
 	}
