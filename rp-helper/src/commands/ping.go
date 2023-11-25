@@ -9,7 +9,7 @@ import (
 
 func Ping(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	resp := responseBuilder{}
-	err := resp.IsEphemeral().Send(client, i)
+	err := resp.IsDeferred().Send(client, i)
 	if err != nil {
 		utils.SendAlert("ping.go - Respond interaction", err.Error())
 	}
