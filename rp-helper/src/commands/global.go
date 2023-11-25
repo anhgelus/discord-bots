@@ -69,13 +69,12 @@ func (res *responseBuilder) Message(s string) *responseBuilder {
 
 func (res *responseBuilder) Embeds(e []*discordgo.MessageEmbed) *responseBuilder {
 	t := time.Now()
-	txt := fmt.Sprintf("%d/%d/%d", t.Day(), t.Month(), t.Year())
-	av := res.I.Member.User.AvatarURL("")
+	footer := &discordgo.MessageEmbedFooter{
+		Text:    fmt.Sprintf("%d/%d/%d", t.Day(), t.Month(), t.Year()),
+		IconURL: res.I.Member.User.AvatarURL(""),
+	}
 	for _, em := range e {
-		em.Footer = &discordgo.MessageEmbedFooter{
-			Text:    txt,
-			IconURL: av,
-		}
+		em.Footer = footer
 	}
 	res.messageEmbeds = e
 	return res

@@ -7,6 +7,7 @@ import (
 	"github.com/anhgelus/discord-bots/rp-helper/src/config"
 	"github.com/anhgelus/discord-bots/rp-helper/src/utils"
 	"github.com/redis/go-redis/v9"
+	"strings"
 )
 
 var Credentials config.RedisCredentials
@@ -44,6 +45,20 @@ func (p *Player) Save() {
 		err = c.Set(Ctx, fmt.Sprintf("%s:sec%d", key, i), p.Goals.Secondaries[i-1], 0).Err()
 		if err != nil {
 			utils.SendAlert(fmt.Sprintf("redis.go - Saving player sec%d", i), err.Error())
+		}
+	}
+	ps, err := c.Get(Ctx, p.GuildID).Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		utils.SendAlert("redis.go - Getting all players", err.Error())
+		return
+	}
+	sp := strings.Split(ps, ",")
+	if !utils.AStringContains(sp, p.DiscordID) {
+		sp = append(sp, p.DiscordID)
+		ps = strings.Join(sp, ",")
+		err = c.Set(Ctx, p.GuildID, ps, 0).Err()
+		if err != nil {
+			utils.SendAlert("redis.go - Saving all players", err.Error())
 		}
 	}
 }
