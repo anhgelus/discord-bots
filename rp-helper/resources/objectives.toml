@@ -1,0 +1,22 @@
+Lang = "en"
+
+[[Mains]]
+Name = "A/B"
+Goal1 = "Be friend with {player}[3]"
+Goal2 = "Kill {player}"
+
+[[Mains]]
+Name = "Aa/Bb"
+Goal1 = "Another example"
+Goal2 = "Another example"
+
+[[Secondaries]]
+Goal = "Never use {weapon}[2]"
+
+[[Placeholders]]
+Name = "weapon"
+List = ["glock17", "M4"]
+
+[[Placeholders]]
+Name = "weapon_type"
+List = ["melee", "shotgun"]

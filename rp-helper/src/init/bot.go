@@ -31,7 +31,7 @@ func Bot(token string) {
 			switch r {
 			case 0:
 			case 1:
-				err = dg.UpdateWatchStatus(0, "Les Copaings")
+				err = dg.UpdateWatchStatus(0, "RP Helper")
 				if err != nil {
 					utils.SendAlert("bot.go - Update status", err.Error())
 				}

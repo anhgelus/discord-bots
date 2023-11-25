@@ -12,6 +12,9 @@ import (
 //go:embed resources/config.toml
 var defaultConfig string
 
+//go:embed resources/objectives.toml
+var defaultObjectives string
+
 func main() {
 	var cfg config.Config
 	err := config.Get(&cfg, defaultConfig)
@@ -19,6 +22,13 @@ func main() {
 		utils.SendError(err)
 		return
 	}
+
+	err = config.GetObjectives(&config.Objs, defaultObjectives)
+	if err != nil {
+		utils.SendError(err)
+		return
+	}
+
 	client, err := cfg.Redis.Get()
 	if err != nil {
 		utils.SendError(err)
