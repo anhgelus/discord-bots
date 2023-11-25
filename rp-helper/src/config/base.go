@@ -1,16 +1,13 @@
 package config
 
 import (
+	"context"
 	"fmt"
-	"github.com/anhgelus/discord-bots/rp-helper/src/redis"
 	"github.com/anhgelus/discord-bots/rp-helper/src/utils"
 	"github.com/pelletier/go-toml/v2"
+	"github.com/redis/go-redis/v9"
 	"os"
 )
-
-type Config struct {
-	Redis redis.RedisCredentials
-}
 
 func Get(cfg *Config, defaultConfig string) error {
 	return get(cfg, defaultConfig, "config")
@@ -32,4 +29,24 @@ func get(cfg any, defaultConfig string, name string) error {
 		return nil
 	}
 	return toml.Unmarshal(c, &cfg)
+}
+
+type Config struct {
+	Redis RedisCredentials
+}
+
+type RedisCredentials struct {
+	Address  string
+	Password string
+	DB       int
+}
+
+func (rc *RedisCredentials) Get() (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     rc.Address,
+		Password: rc.Password,
+		DB:       rc.DB,
+	})
+	err := client.Ping(context.Background()).Err()
+	return client, err
 }

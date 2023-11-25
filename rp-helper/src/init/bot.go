@@ -77,7 +77,7 @@ func initCommands() {
 		Handler: cmd.Ping,
 	}, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
-			Name:        "me",
+			Name:        "profile",
 			Description: "Get information about yourself",
 		},
 		Handler: cmd.Me,

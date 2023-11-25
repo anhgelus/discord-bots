@@ -9,13 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type RedisCredentials struct {
-	Address  string
-	Password string
-	DB       int
-}
-
-var Credentials RedisCredentials
+var Credentials config.RedisCredentials
 
 var Ctx = context.Background()
 
@@ -28,16 +22,6 @@ type Player struct {
 type PlayerGoal struct {
 	Main        string
 	Secondaries []string
-}
-
-func (rc *RedisCredentials) Get() (*redis.Client, error) {
-	client := redis.NewClient(&redis.Options{
-		Addr:     rc.Address,
-		Password: rc.Password,
-		DB:       rc.DB,
-	})
-	err := client.Ping(Ctx).Err()
-	return client, err
 }
 
 func (p *Player) GenKey() string {
