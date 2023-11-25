@@ -7,7 +7,6 @@ services:
       - .env
     depends_on:
       - redis
-      - postgres
     volumes:
       - ./config:/config
   redis:
