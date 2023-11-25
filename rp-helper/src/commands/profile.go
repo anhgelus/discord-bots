@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func Me(client *discordgo.Session, i *discordgo.InteractionCreate) {
+func Profile(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	p := redis.Player{
 		DiscordID: i.Member.User.ID,
 		GuildID:   i.GuildID,
@@ -16,10 +16,10 @@ func Me(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := p.Load()
 	resp := responseBuilder{}
 	if err != nil {
-		utils.SendAlert("me.go - Loading player", err.Error())
+		utils.SendAlert("profile.go - Loading player", err.Error())
 		err = resp.IsEphemeral().Message("Error, please report this bug").Send(client, i)
 		if err != nil {
-			utils.SendAlert("me.go - Sending error interaction 1", err.Error())
+			utils.SendAlert("profile.go - Sending error interaction 1", err.Error())
 		}
 		return
 	}
@@ -48,17 +48,23 @@ func Me(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			fields = append(fields, f)
 		}
 	}
+	message := ""
+	if len(fields) == 0 {
+		message = "You have no goals :("
+	}
 	err = resp.IsEphemeral().Embeds([]*discordgo.MessageEmbed{
 		{
-			Title:  i.Member.User.Username + " profile",
-			Fields: fields,
+			Title:       i.Member.User.Username + " profile",
+			Fields:      fields,
+			Color:       utils.Success,
+			Description: message,
 		},
 	}).Send(client, i)
 	if err != nil {
-		utils.SendAlert("me.go - Sending information", err.Error())
+		utils.SendAlert("profile.go - Sending information", err.Error())
 		err = resp.IsEphemeral().Message("Error, please report this bug").Send(client, i)
 		if err != nil {
-			utils.SendAlert("me.go - Sending error interaction 2", err.Error())
+			utils.SendAlert("profile.go - Sending error interaction 2", err.Error())
 		}
 	}
 }

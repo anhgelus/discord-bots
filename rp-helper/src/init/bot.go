@@ -80,6 +80,6 @@ func initCommands() {
 			Name:        "profile",
 			Description: "Get information about yourself",
 		},
-		Handler: cmd.Me,
+		Handler: cmd.Profile,
 	})
 }
