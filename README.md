@@ -11,4 +11,5 @@ Look at the file `LICENSE` located at the root of the project!
 ## Projects
 
 - `Les Copaings Bot` is in `les-copaings`
+- `RP Helper` is in `rp-helper`
 
