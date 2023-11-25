@@ -16,8 +16,17 @@ var cmds []Cmd
 func RegisterCommands(client *discordgo.Session) {
 	registeredCommands := make([]*discordgo.ApplicationCommand, len(cmds))
 	o := 0
+	guildID := ""
+	if Debug {
+		gs, err := client.UserGuilds(1, "", "")
+		if err != nil {
+			utils.SendAlert("commands.go - Fecthing guilds for debug", err.Error())
+		} else {
+			guildID = gs[0].ID
+		}
+	}
 	for i, v := range cmds {
-		cmd, err := client.ApplicationCommandCreate(client.State.User.ID, "", &v.ApplicationCommand)
+		cmd, err := client.ApplicationCommandCreate(client.State.User.ID, guildID, &v.ApplicationCommand)
 		if err != nil {
 			utils.SendAlert("commands.go - Create application command", err.Error())
 			continue

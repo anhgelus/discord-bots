@@ -20,6 +20,8 @@ const (
 	AnsiYellowBold  = "\033[33;1m"
 )
 
+var DebugEnabled bool
+
 // SendSuccess sends a success message
 func SendSuccess(message string) {
 	log.Default().Println(AnsiGreen, message, AnsiReset)
@@ -32,7 +34,9 @@ func SendWarn(message string) {
 
 // SendDebug sends a debug message
 func SendDebug(message ...any) {
-	log.Default().Println(AnsiCyan, message, AnsiReset)
+	if DebugEnabled {
+		log.Default().Println(AnsiCyan, message, AnsiReset)
+	}
 }
 
 // SendAlert sends an alert

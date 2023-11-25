@@ -10,11 +10,15 @@ import (
 )
 
 type Objectives struct {
+	Settings     Settings
+	Mains        []Main
+	Secondaries  []Secondary
+	Placeholders []Placeholder
+}
+
+type Settings struct {
 	Lang                string
 	NumberOfSecondaries int
-	Mains               []Main
-	Secondaries         []Secondary
-	Placeholders        []Placeholder
 }
 
 type Main struct {
@@ -142,7 +146,7 @@ func (p *numberPlaceholder) Replace(s string) string {
 		if i != p.Number-1 {
 			ns += placeholder[rand.Intn(len(placeholder))] + ", "
 		} else {
-			switch Objs.Lang {
+			switch Objs.Settings.Lang {
 			case "en":
 				ns += enSep + " " + placeholder[rand.Intn(len(placeholder))]
 			case "fr":

@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var Debug bool
+
 func Bot(token string) {
 	dg, err := discordgo.New("Bot " + token) // Define connection to discord API with bot token
 	if err != nil {

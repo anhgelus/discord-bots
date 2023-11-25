@@ -34,7 +34,7 @@ func (p *Player) GenKey() string {
 }
 
 func (p *Player) Save() {
-	if len(p.Goals.Secondaries) != config.Objs.NumberOfSecondaries {
+	if len(p.Goals.Secondaries) != config.Objs.Settings.NumberOfSecondaries {
 		utils.SendAlert("redis.go - Saving player", "too much secondaries")
 		return
 	}
@@ -45,7 +45,7 @@ func (p *Player) Save() {
 	if err != nil {
 		utils.SendAlert("redis.go - Saving player main", err.Error())
 	}
-	for i := 1; i <= config.Objs.NumberOfSecondaries; i++ {
+	for i := 1; i <= config.Objs.Settings.NumberOfSecondaries; i++ {
 		err = c.Set(Ctx, fmt.Sprintf("%s:sec%d", key, i), p.Goals.Secondaries[i-1], 0).Err()
 		if err != nil {
 			utils.SendAlert(fmt.Sprintf("redis.go - Saving player sec%d", i), err.Error())
@@ -82,7 +82,7 @@ func (p *Player) Load() error {
 		utils.SendAlert("redis.go - Loading player main", err.Error())
 	}
 	var secondaries []string
-	for i := 1; i <= config.Objs.NumberOfSecondaries; i++ {
+	for i := 1; i <= config.Objs.Settings.NumberOfSecondaries; i++ {
 		v, err := c.Get(Ctx, fmt.Sprintf("%s:sec%d", key, i)).Result()
 		if errors.Is(err, redis.Nil) {
 			v = config.UnsetGoal
