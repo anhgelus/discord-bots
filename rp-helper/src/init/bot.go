@@ -68,7 +68,7 @@ func Bot(token string) {
 }
 
 func initCommands() {
-	//var adminPerm int64 = discordgo.PermissionManageServer
+	var adminPerm int64 = discordgo.PermissionManageServer
 	cmds = append(cmds, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "ping",
@@ -81,5 +81,26 @@ func initCommands() {
 			Description: "Get information about yourself",
 		},
 		Handler: cmd.Profile,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "list",
+			Description: "List players",
+		},
+		Handler: cmd.List,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "add",
+			Description: "Add a player",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to add",
+					Required:    true,
+				},
+			},
+			DefaultMemberPermissions: &adminPerm,
+		},
+		Handler: cmd.Add,
 	})
 }

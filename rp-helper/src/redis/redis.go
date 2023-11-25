@@ -25,6 +25,10 @@ type PlayerGoal struct {
 	Secondaries []string
 }
 
+var (
+	GuildIDDiscordIDNotPresentError = errors.New("guild_id or discord_id not informed")
+)
+
 func (p *Player) GenKey() string {
 	return fmt.Sprintf("%s:%s", p.GuildID, p.DiscordID)
 }
@@ -65,7 +69,7 @@ func (p *Player) Save() {
 
 func (p *Player) Load() error {
 	if p.GuildID == "" || p.DiscordID == "" {
-		return errors.New("guild_id and discord_id not informed")
+		return GuildIDDiscordIDNotPresentError
 	}
 	c, _ := Credentials.Get()
 	defer c.Close()
@@ -89,4 +93,29 @@ func (p *Player) Load() error {
 	}
 	p.Goals.Secondaries = secondaries
 	return nil
+}
+
+func GetPlayers(guildID string) []Player {
+	c, _ := Credentials.Get()
+	defer c.Close()
+	ps, err := c.Get(Ctx, guildID).Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		utils.SendAlert("redis.go - Getting all players", err.Error())
+		return nil
+	}
+	sp := strings.Split(ps, ",")
+	var players []Player
+	for _, s := range sp {
+		if s == "" {
+			continue
+		}
+		p := Player{DiscordID: s, GuildID: guildID}
+		err = p.Load()
+		if err != nil {
+			utils.SendAlert("redis.go - Loading player", err.Error())
+			continue
+		}
+		players = append(players, p)
+	}
+	return players
 }

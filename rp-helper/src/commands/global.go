@@ -79,3 +79,12 @@ func (res *responseBuilder) Embeds(e []*discordgo.MessageEmbed) *responseBuilder
 	res.messageEmbeds = e
 	return res
 }
+
+func generateOptionMap(i *discordgo.InteractionCreate) map[string]*discordgo.ApplicationCommandInteractionDataOption {
+	options := i.ApplicationCommandData().Options
+	optionMap := make(map[string]*discordgo.ApplicationCommandInteractionDataOption, len(options))
+	for _, opt := range options {
+		optionMap[opt.Name] = opt
+	}
+	return optionMap
+}
