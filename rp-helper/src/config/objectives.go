@@ -10,10 +10,11 @@ import (
 )
 
 type Objectives struct {
-	Lang         string
-	Mains        []Main
-	Secondaries  []Secondary
-	Placeholders []Placeholder
+	Lang                string
+	NumberOfSecondaries int
+	Mains               []Main
+	Secondaries         []Secondary
+	Placeholders        []Placeholder
 }
 
 type Main struct {
@@ -53,6 +54,8 @@ var (
 const (
 	enSep = "and"
 	frSep = "et"
+
+	UnsetGoal = "#-- UNSET --#"
 )
 
 func (s *Secondary) GenerateGoal() string {

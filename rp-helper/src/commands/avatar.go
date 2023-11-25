@@ -6,19 +6,15 @@ import (
 )
 
 func Avatar(client *discordgo.Session, i *discordgo.InteractionCreate) {
-	err := client.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Title:  i.Member.User.Username + "'s  avatar",
-					Color:  15418782,
-					Image:  &discordgo.MessageEmbedImage{URL: i.Member.User.AvatarURL("")},
-					Footer: &discordgo.MessageEmbedFooter{Text: i.Member.User.Username, IconURL: i.Member.User.AvatarURL("")},
-				},
-			},
+	resp := responseBuilder{}
+	err := resp.Embeds([]*discordgo.MessageEmbed{
+		{
+			Title:  i.Member.User.Username + "'s  avatar",
+			Color:  utils.Success,
+			Image:  &discordgo.MessageEmbedImage{URL: i.Member.User.AvatarURL("")},
+			Footer: &discordgo.MessageEmbedFooter{Text: i.Member.User.Username, IconURL: i.Member.User.AvatarURL("")},
 		},
-	})
+	}).Send(client, i)
 	if err != nil {
 		utils.SendAlert("avatar.go - Interaction respond", err.Error())
 	}

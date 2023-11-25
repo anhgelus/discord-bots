@@ -1,4 +1,5 @@
 Lang = "en"
+NumberOfSecondaries = 3
 
 [[Mains]]
 Name = "A/B"
