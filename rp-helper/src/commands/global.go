@@ -3,45 +3,55 @@ package commands
 import "github.com/bwmarrin/discordgo"
 
 type responseBuilder struct {
-	Content       string
-	Ephemeral     bool
-	Deferred      bool
-	MessageEmbeds []*discordgo.MessageEmbed
+	content       string
+	ephemeral     bool
+	deferred      bool
+	messageEmbeds []*discordgo.MessageEmbed
 }
 
 func (res *responseBuilder) Send(client *discordgo.Session, i *discordgo.InteractionCreate) error {
 	r := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: res.Content,
-			Embeds:  res.MessageEmbeds,
+			Content: res.content,
+			Embeds:  res.messageEmbeds,
 		},
 	}
-	if res.Deferred {
+	if res.deferred {
 		r.Type = discordgo.InteractionResponseDeferredChannelMessageWithSource
 	}
-	if res.Ephemeral {
+	if res.ephemeral {
 		r.Data.Flags = discordgo.MessageFlagsEphemeral
 	}
 	return client.InteractionRespond(i.Interaction, r)
 }
 
 func (res *responseBuilder) IsEphemeral() *responseBuilder {
-	res.Ephemeral = true
+	res.ephemeral = true
+	return res
+}
+
+func (res *responseBuilder) NotEphemeral() *responseBuilder {
+	res.ephemeral = false
 	return res
 }
 
 func (res *responseBuilder) IsDeferred() *responseBuilder {
-	res.Deferred = true
+	res.deferred = true
+	return res
+}
+
+func (res *responseBuilder) NotDeferred() *responseBuilder {
+	res.deferred = false
 	return res
 }
 
 func (res *responseBuilder) Message(s string) *responseBuilder {
-	res.Content = s
+	res.content = s
 	return res
 }
 
 func (res *responseBuilder) Embeds(e []*discordgo.MessageEmbed) *responseBuilder {
-	res.MessageEmbeds = e
+	res.messageEmbeds = e
 	return res
 }
