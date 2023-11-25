@@ -49,10 +49,10 @@ func getTops(client *discordgo.Session, i *discordgo.InteractionCreate) string {
 			msg += fmt.Sprintf("%d. **<@%s>** - niveau : %d\n", i+1, top.UserID, xp.CalcLevel(top.XP))
 			continue
 		}
-		data := xp.NewXpNoUpdate(member, &top, 0)
-		if data.IsNewLevel {
-			reload = true
-		}
+		//data := xp.NewXpNoUpdate(member, &top, 0)
+		//if data.IsNewLevel {
+		//	reload = true
+		//}
 		msg += fmt.Sprintf("%d. **%s** - niveau : %d\n", i+1, member.User.Username, xp.CalcLevel(top.XP))
 	}
 	if reload {
