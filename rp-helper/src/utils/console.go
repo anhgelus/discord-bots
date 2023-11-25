@@ -37,7 +37,7 @@ func SendDebug(message ...any) {
 
 // SendAlert sends an alert
 func SendAlert(pos string, message string) {
-	log.Default().Println(fmt.Sprintf("[%s] %s%s%s", pos, Red, message, AnsiReset))
+	log.Default().Println(fmt.Sprintf("[%s] %s%s%s", pos, AnsiRed, message, AnsiReset))
 }
 
 // SendError sends an error (like a panic(any...))

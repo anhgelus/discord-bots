@@ -1,8 +1,8 @@
-FROM golang:1.19-alpine
+FROM golang:1.21-alpine
 
 WORKDIR /app
 
-RUN mkdir /config
+RUN mkdir /config && chmod 777 -R /config
 
 COPY . .
 
