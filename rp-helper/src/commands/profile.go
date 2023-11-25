@@ -14,10 +14,13 @@ func Profile(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		GuildID:   i.GuildID,
 	}
 	err := p.Load()
-	resp := responseBuilder{}
+	resp := responseBuilder{
+		C: client,
+		I: i,
+	}
 	if err != nil {
 		utils.SendAlert("profile.go - Loading player", err.Error())
-		err = resp.IsEphemeral().Message("Error, please report this bug").Send(client, i)
+		err = resp.IsEphemeral().Message("Error, please report this bug").Send()
 		if err != nil {
 			utils.SendAlert("profile.go - Sending error interaction 1", err.Error())
 		}
@@ -59,10 +62,10 @@ func Profile(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			Color:       utils.Success,
 			Description: message,
 		},
-	}).Send(client, i)
+	}).Send()
 	if err != nil {
 		utils.SendAlert("profile.go - Sending information", err.Error())
-		err = resp.IsEphemeral().Message("Error, please report this bug").Send(client, i)
+		err = resp.IsEphemeral().Message("Error, please report this bug").Send()
 		if err != nil {
 			utils.SendAlert("profile.go - Sending error interaction 2", err.Error())
 		}

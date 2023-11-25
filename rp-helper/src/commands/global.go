@@ -1,15 +1,21 @@
 package commands
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"fmt"
+	"github.com/bwmarrin/discordgo"
+	"time"
+)
 
 type responseBuilder struct {
 	content       string
 	ephemeral     bool
 	deferred      bool
 	messageEmbeds []*discordgo.MessageEmbed
+	I             *discordgo.InteractionCreate
+	C             *discordgo.Session
 }
 
-func (res *responseBuilder) Send(client *discordgo.Session, i *discordgo.InteractionCreate) error {
+func (res *responseBuilder) Send() error {
 	r := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -23,7 +29,17 @@ func (res *responseBuilder) Send(client *discordgo.Session, i *discordgo.Interac
 	if res.ephemeral {
 		r.Data.Flags = discordgo.MessageFlagsEphemeral
 	}
-	return client.InteractionRespond(i.Interaction, r)
+	return res.C.InteractionRespond(res.I.Interaction, r)
+}
+
+func (res *responseBuilder) Interaction(i *discordgo.InteractionCreate) *responseBuilder {
+	res.I = i
+	return res
+}
+
+func (res *responseBuilder) Client(c *discordgo.Session) *responseBuilder {
+	res.C = c
+	return res
 }
 
 func (res *responseBuilder) IsEphemeral() *responseBuilder {
@@ -52,6 +68,15 @@ func (res *responseBuilder) Message(s string) *responseBuilder {
 }
 
 func (res *responseBuilder) Embeds(e []*discordgo.MessageEmbed) *responseBuilder {
+	t := time.Now()
+	txt := fmt.Sprintf("%d/%d/%d", t.Day(), t.Month(), t.Year())
+	av := res.I.Member.User.AvatarURL("")
+	for _, em := range e {
+		em.Footer = &discordgo.MessageEmbedFooter{
+			Text:    txt,
+			IconURL: av,
+		}
+	}
 	res.messageEmbeds = e
 	return res
 }
