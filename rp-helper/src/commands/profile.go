@@ -41,9 +41,9 @@ func Profile(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	for i, s := range p.Goals.Secondaries {
 		if s != config.UnsetGoal {
 			f := &discordgo.MessageEmbedField{
-				Name:   fmt.Sprintf("Secondary %d", i),
+				Name:   fmt.Sprintf("Secondary %d", i+1),
 				Value:  s,
-				Inline: false,
+				Inline: true,
 			}
 			if s == "" {
 				f.Value = "Error"
@@ -57,10 +57,13 @@ func Profile(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	err = resp.IsEphemeral().Embeds([]*discordgo.MessageEmbed{
 		{
-			Title:       i.Member.User.Username + " profile",
-			Fields:      fields,
-			Color:       utils.Success,
+			Title:       "Your profile",
 			Description: message,
+			Color:       utils.Success,
+			Thumbnail: &discordgo.MessageEmbedThumbnail{
+				URL: i.Member.User.AvatarURL("512"),
+			},
+			Fields: fields,
 		},
 	}).Send()
 	if err != nil {

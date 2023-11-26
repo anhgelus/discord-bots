@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"time"
 )
@@ -88,11 +87,16 @@ func (res *responseBuilder) Message(s string) *responseBuilder {
 func (res *responseBuilder) Embeds(e []*discordgo.MessageEmbed) *responseBuilder {
 	t := time.Now()
 	footer := &discordgo.MessageEmbedFooter{
-		Text:    fmt.Sprintf("%d/%d/%d", t.Day(), t.Month(), t.Year()),
-		IconURL: res.I.Member.User.AvatarURL(""),
+		Text:    "by anhgelus",
+		IconURL: res.C.State.User.AvatarURL(""),
+	}
+	author := &discordgo.MessageEmbedAuthor{
+		Name: "RP Helper",
 	}
 	for _, em := range e {
 		em.Footer = footer
+		em.Timestamp = t.Format(time.RFC3339)
+		em.Author = author
 	}
 	res.messageEmbeds = e
 	return res
