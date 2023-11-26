@@ -5,6 +5,7 @@ import (
 	"github.com/anhgelus/discord-bots/rp-helper/src/utils"
 	"math/rand"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -79,7 +80,7 @@ func (s *Secondary) GenerateGoal() string {
 
 func (m *Main) GenerateGoals() (string, string) {
 	g1, g2 := Secondary{m.Goal1}, Secondary{m.Goal2}
-	return g1.Goal, g2.Goal
+	return g1.GenerateGoal(), g2.GenerateGoal()
 }
 
 func GenerateMainGoals(mains []Main) []string {
@@ -123,15 +124,15 @@ func getNumberPlaceholders(s string) ([]numberPlaceholder, string) {
 }
 
 func getSimplePlaceholders(s string) ([]simplePlaceholder, string) {
-	bases := regNumbers.FindAllString(s, -1)
+	bases := regSimple.FindAllString(s, -1)
 	var numbers []simplePlaceholder
 	ns := s
 	for i, b := range bases {
-		b = strings.ReplaceAll(b, "{", "")
-		b = strings.ReplaceAll(b, "}", "")
+		sp := strings.ReplaceAll(b, "{", "")
+		sp = strings.ReplaceAll(sp, "}", "")
 		numbers = append(numbers, simplePlaceholder{
 			ID:          i,
-			Placeholder: b,
+			Placeholder: sp,
 		})
 		ns = strings.Replace(ns, b, fmt.Sprintf("$s{%d}", i), 1)
 	}
@@ -159,24 +160,37 @@ func (p *numberPlaceholder) Replace(s string) string {
 		return s
 	}
 	ns := ""
+	var randValues []int
 	for i := 1; i < p.Number; i++ {
+		ns += placeholderRandValue(placeholder, &randValues)
 		if i != p.Number-1 {
-			ns += placeholder[rand.Intn(len(placeholder))] + ", "
+			ns += ", "
 		} else {
+			var sep string
 			switch Objs.Settings.Lang {
 			case "en":
-				ns += enSep + " " + placeholder[rand.Intn(len(placeholder))]
+				sep = enSep
 			case "fr":
-				ns += frSep + " " + placeholder[rand.Intn(len(placeholder))]
+				sep = frSep
 			default:
-				ns += enSep + " " + placeholder[rand.Intn(len(placeholder))]
+				sep = enSep
 			}
+			ns += fmt.Sprintf(" %s %s", sep, placeholderRandValue(placeholder, &randValues))
 		}
 	}
-	return strings.ReplaceAll(s, fmt.Sprintf("$p{%d}", p.ID), ns)
+	return strings.ReplaceAll(s, fmt.Sprintf("$n{%d}", p.ID), ns)
 }
 
 func (p *simplePlaceholder) Replace(s string) string {
 	placeholder := getPlaceholder(p.Placeholder)
-	return strings.ReplaceAll(s, fmt.Sprintf("$p{%d}", p.ID), placeholder[rand.Intn(len(placeholder))])
+	return strings.ReplaceAll(s, fmt.Sprintf("$s{%d}", p.ID), placeholder[rand.Intn(len(placeholder))])
+}
+
+func placeholderRandValue(placeholder []string, values *[]int) string {
+	n := -1
+	for n == -1 || slices.Contains(*values, n) {
+		n = rand.Intn(len(placeholder))
+	}
+	*values = append(*values, n)
+	return placeholder[n]
 }
