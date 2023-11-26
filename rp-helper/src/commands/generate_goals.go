@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/anhgelus/discord-bots/rp-helper/src/config"
 	"github.com/anhgelus/discord-bots/rp-helper/src/redis"
 	"github.com/anhgelus/discord-bots/rp-helper/src/utils"
@@ -13,6 +14,10 @@ import (
 func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	resp := responseBuilder{C: client, I: i}
 	ps := redis.GetPlayers(i.GuildID)
+	var pss []string
+	for _, p := range ps {
+		pss = append(pss, fmt.Sprintf("<@%s>", p.DiscordID))
+	}
 
 	n := len(ps)
 	if n/2+1 > len(config.Objs.Mains) {
@@ -38,7 +43,7 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	l := len(config.Objs.Mains)
 	var objMains []string
 	if n == len(config.Objs.Mains)/2 || n == len(config.Objs.Mains)/2+1 {
-		objMains = config.GenerateMainGoals(config.Objs.Mains)
+		objMains = config.GenerateMainGoals(config.Objs.Mains, pss)
 	} else if n%2 == 0 {
 		for i := 0; i < l-n/2; i++ {
 			r := rand.Intn(len(objMainsBrut))
@@ -50,7 +55,7 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			slices.Delete(objMains, r, r+1)
 		}
 	}
-	objMains = config.GenerateMainGoals(objMainsBrut)
+	objMains = config.GenerateMainGoals(objMainsBrut, pss)
 	objSecs := config.Objs.Secondaries
 	lS := len(config.Objs.Secondaries)
 	for i := 0; i < lS-second; i++ {
@@ -65,7 +70,7 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		slices.Delete(objMains, r, r+1)
 		for i := 0; i < config.Objs.Settings.NumberOfSecondaries; i++ {
 			r = rand.Intn(len(objSecs))
-			p.Goals.Secondaries[i] = objSecs[r].GenerateGoal()
+			p.Goals.Secondaries[i] = objSecs[r].GenerateGoal(pss)
 		}
 		err := p.Save()
 		if err != nil {
