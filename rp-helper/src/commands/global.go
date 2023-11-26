@@ -10,12 +10,20 @@ type responseBuilder struct {
 	content       string
 	ephemeral     bool
 	deferred      bool
+	edit          bool
 	messageEmbeds []*discordgo.MessageEmbed
 	I             *discordgo.InteractionCreate
 	C             *discordgo.Session
 }
 
 func (res *responseBuilder) Send() error {
+	if res.edit {
+		_, err := res.C.InteractionResponseEdit(res.I.Interaction, &discordgo.WebhookEdit{
+			Content: &res.content,
+			Embeds:  &res.messageEmbeds,
+		})
+		return err
+	}
 	r := &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -59,6 +67,16 @@ func (res *responseBuilder) IsDeferred() *responseBuilder {
 
 func (res *responseBuilder) NotDeferred() *responseBuilder {
 	res.deferred = false
+	return res
+}
+
+func (res *responseBuilder) IsEdit() *responseBuilder {
+	res.edit = true
+	return res
+}
+
+func (res *responseBuilder) NotEdit() *responseBuilder {
+	res.edit = false
 	return res
 }
 

@@ -13,6 +13,7 @@ func Ping(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	if err != nil {
 		utils.SendAlert("ping.go - Respond interaction", err.Error())
 	}
+	resp.IsEdit()
 
 	response, err := client.InteractionResponse(i.Interaction)
 	if err != nil {
@@ -33,10 +34,7 @@ func Ping(client *discordgo.Session, i *discordgo.InteractionCreate) {
 			client.HeartbeatLatency().Milliseconds(),
 		)
 	}
-
-	_, err = client.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
-		Content: &msg,
-	})
+	err = resp.Message(msg).Send()
 
 	if err != nil {
 		utils.SendAlert("ping.go - Interaction response edit", err.Error())
