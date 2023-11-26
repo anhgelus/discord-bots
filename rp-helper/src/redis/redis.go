@@ -26,17 +26,17 @@ type PlayerGoal struct {
 }
 
 var (
-	GuildIDDiscordIDNotPresentError = errors.New("guild_id or discord_id not informed")
+	ErrGuildIDDiscordIDNotPresent = errors.New("guild_id or discord_id not informed")
+	ErrWrongSecondaries           = errors.New("wrong number of secondaries")
 )
 
 func (p *Player) GenKey() string {
 	return fmt.Sprintf("%s:%s", p.GuildID, p.DiscordID)
 }
 
-func (p *Player) Save() {
+func (p *Player) Save() error {
 	if len(p.Goals.Secondaries) != config.Objs.Settings.NumberOfSecondaries {
-		utils.SendAlert("redis.go - Saving player", "too much secondaries")
-		return
+		return ErrWrongSecondaries
 	}
 	c, _ := Credentials.Get()
 	defer c.Close()
@@ -53,8 +53,7 @@ func (p *Player) Save() {
 	}
 	ps, err := c.Get(Ctx, p.GuildID).Result()
 	if err != nil && !errors.Is(err, redis.Nil) {
-		utils.SendAlert("redis.go - Getting all players", err.Error())
-		return
+		return err
 	}
 	sp := strings.Split(ps, ",")
 	if !utils.AStringContains(sp, p.DiscordID) {
@@ -62,14 +61,15 @@ func (p *Player) Save() {
 		ps = strings.Join(sp, ",")
 		err = c.Set(Ctx, p.GuildID, ps, 0).Err()
 		if err != nil {
-			utils.SendAlert("redis.go - Saving all players", err.Error())
+			return err
 		}
 	}
+	return nil
 }
 
 func (p *Player) Load() error {
 	if p.GuildID == "" || p.DiscordID == "" {
-		return GuildIDDiscordIDNotPresentError
+		return ErrGuildIDDiscordIDNotPresent
 	}
 	c, _ := Credentials.Get()
 	defer c.Close()

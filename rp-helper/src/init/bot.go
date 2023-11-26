@@ -91,6 +91,13 @@ func initCommands() {
 		Handler: cmd.List,
 	}, Cmd{
 		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:                     "generate_goals",
+			Description:              "Generate goals for every players",
+			DefaultMemberPermissions: &adminPerm,
+		},
+		Handler: cmd.GenerateGoals,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
 			Name:        "add",
 			Description: "Add a player",
 			Options: []*discordgo.ApplicationCommandOption{

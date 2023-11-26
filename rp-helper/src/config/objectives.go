@@ -82,6 +82,23 @@ func (m *Main) GenerateGoals() (string, string) {
 	return g1.Goal, g2.Goal
 }
 
+func GenerateMainGoals(mains []Main) []string {
+	var goals []string
+	for _, m := range mains {
+		g1, g2 := m.GenerateGoals()
+		goals = append(goals, g1, g2)
+	}
+	return goals
+}
+
+func GenerateSecondaryGoals(secs []Secondary) []string {
+	var goals []string
+	for _, s := range secs {
+		goals = append(goals, s.GenerateGoal())
+	}
+	return goals
+}
+
 func getNumberPlaceholders(s string) ([]numberPlaceholder, string) {
 	bases := regNumbers.FindAllString(s, -1)
 	var numbers []numberPlaceholder

@@ -27,6 +27,7 @@ func main() {
 	utils.SendDebug(cfg.Redis.Address, cfg.Main.Debug)
 
 	start.Debug = cfg.Main.Debug
+	utils.DebugEnabled = start.Debug
 
 	client, err := cfg.Redis.Get()
 	if err != nil {
