@@ -63,41 +63,24 @@ const (
 	UnsetGoal = "#-- UNSET --#"
 )
 
-func (s *Secondary) GenerateGoal(players []string) string {
+func (s *Secondary) GenerateGoal(currentPlayer string, players []string) string {
 	if !regSimple.MatchString(s.Goal) {
 		return s.Goal
 	}
 	numbers, g := getNumberPlaceholders(s.Goal)
 	simple, g := getSimplePlaceholders(g)
 	for _, n := range numbers {
-		g = n.Replace(g, players)
+		g = n.Replace(g, currentPlayer, players)
 	}
 	for _, s := range simple {
-		g = s.Replace(g, players)
+		g = s.Replace(g, currentPlayer, players)
 	}
 	return g
 }
 
-func (m *Main) GenerateGoals(players []string) (string, string) {
+func (m *Main) GenerateGoals(currentPlayer string, players []string) (string, string) {
 	g1, g2 := Secondary{m.Goal1}, Secondary{m.Goal2}
-	return g1.GenerateGoal(players), g2.GenerateGoal(players)
-}
-
-func GenerateMainGoals(mains []Main, players []string) []string {
-	var goals []string
-	for _, m := range mains {
-		g1, g2 := m.GenerateGoals(players)
-		goals = append(goals, g1, g2)
-	}
-	return goals
-}
-
-func GenerateSecondaryGoals(secs []Secondary, players []string) []string {
-	var goals []string
-	for _, s := range secs {
-		goals = append(goals, s.GenerateGoal(players))
-	}
-	return goals
+	return g1.GenerateGoal(currentPlayer, players), g2.GenerateGoal(currentPlayer, players)
 }
 
 func getNumberPlaceholders(s string) ([]numberPlaceholder, string) {
@@ -139,8 +122,10 @@ func getSimplePlaceholders(s string) ([]simplePlaceholder, string) {
 	return numbers, ns
 }
 
-func getPlaceholder(name string, players []string) []string {
+func getPlaceholder(name string, currentPlayer string, players []string) []string {
 	if name == "player" {
+		i := slices.Index(players, "<@"+currentPlayer+">")
+		slices.Delete(players, i, i+1)
 		return players
 	}
 	if len(mObjs) == 0 {
@@ -156,8 +141,8 @@ func getPlaceholder(name string, players []string) []string {
 	return v
 }
 
-func (p *numberPlaceholder) Replace(s string, players []string) string {
-	placeholder := getPlaceholder(p.Placeholder, players)
+func (p *numberPlaceholder) Replace(s string, currentPlayer string, players []string) string {
+	placeholder := getPlaceholder(p.Placeholder, currentPlayer, players)
 	if len(placeholder) < p.Number {
 		utils.SendAlert("objectives.go - Replacing number placeholder", "too much items for "+p.Placeholder)
 		return s
@@ -184,8 +169,8 @@ func (p *numberPlaceholder) Replace(s string, players []string) string {
 	return strings.ReplaceAll(s, fmt.Sprintf("n{$%d}", p.ID), ns)
 }
 
-func (p *simplePlaceholder) Replace(s string, players []string) string {
-	placeholder := getPlaceholder(p.Placeholder, players)
+func (p *simplePlaceholder) Replace(s string, currentPlayer string, players []string) string {
+	placeholder := getPlaceholder(p.Placeholder, currentPlayer, players)
 	return strings.ReplaceAll(s, fmt.Sprintf("s{$%d}", p.ID), placeholder[rand.Intn(len(placeholder))])
 }
 

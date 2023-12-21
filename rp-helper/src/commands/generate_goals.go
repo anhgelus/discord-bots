@@ -55,7 +55,6 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	objMains := config.GenerateMainGoals(objMainsBrut, pss)
 	objSecs := config.Objs.Secondaries
 	lS := len(config.Objs.Secondaries)
 	for i := 0; i < lS-second; i++ {
@@ -63,16 +62,22 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		slices.Delete(objSecs, r, r+1)
 	}
 
+	var objMains []string
+	for _, o := range objMainsBrut {
+		objMains = append(objMains, o.Goal1, o.Goal2)
+	}
+
 	hasError := false
 	for _, p := range ps {
 		r := rand.Intn(len(objMains))
-		p.Goals.Main = objMains[r]
+		secondary := config.Secondary{Goal: objMains[r]}
+		p.Goals.Main = secondary.GenerateGoal(p.DiscordID, pss)
 		slices.Delete(objMains, r, r+1)
 		for i := 0; i < config.Objs.Settings.NumberOfSecondaries; i++ {
 			r = rand.Intn(len(objSecs))
-			p.Goals.Secondaries[i] = objSecs[r].GenerateGoal(pss)
+			p.Goals.Secondaries[i] = objSecs[r].GenerateGoal(p.DiscordID, pss)
 		}
-		err := p.Save()
+		err = p.Save()
 		if err != nil {
 			hasError = true
 			utils.SendAlert("generate_goals.go - Saving player", err.Error())
