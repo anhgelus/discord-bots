@@ -40,22 +40,22 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 		utils.SendAlert("generate_goals.go - Sending defer", err.Error())
 	}
 	objMainsBrut := config.Objs.Mains
-	l := len(config.Objs.Mains)
-	var objMains []string
-	if n == len(config.Objs.Mains)/2 || n == len(config.Objs.Mains)/2+1 {
-		objMains = config.GenerateMainGoals(config.Objs.Mains, pss)
-	} else if n%2 == 0 {
-		for i := 0; i < l-n/2; i++ {
-			r := rand.Intn(len(objMainsBrut))
-			slices.Delete(objMains, r, r+1)
-		}
-	} else {
-		for i := 0; i < l-n/2+1; i++ {
-			r := rand.Intn(len(objMainsBrut))
-			slices.Delete(objMains, r, r+1)
+
+	if !(n == len(config.Objs.Mains)/2 || n == len(config.Objs.Mains)/2+1) {
+		if n%2 == 0 {
+			for i := 0; i < n/2; i++ {
+				r := rand.Intn(len(objMainsBrut))
+				slices.Delete(objMainsBrut, r, r+1)
+			}
+		} else {
+			for i := 0; i < n/2+1; i++ {
+				r := rand.Intn(len(objMainsBrut))
+				slices.Delete(objMainsBrut, r, r+1)
+			}
 		}
 	}
-	objMains = config.GenerateMainGoals(objMainsBrut, pss)
+
+	objMains := config.GenerateMainGoals(objMainsBrut, pss)
 	objSecs := config.Objs.Secondaries
 	lS := len(config.Objs.Secondaries)
 	for i := 0; i < lS-second; i++ {
