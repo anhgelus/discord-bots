@@ -9,15 +9,21 @@ import (
 	"math"
 	"math/rand"
 	"slices"
+	"sync"
 )
 
 func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	resp := responseBuilder{C: client, I: i}
 	ps := redis.GetPlayers(i.GuildID)
+	var wgStart sync.WaitGroup
 	var pss []string
-	for _, p := range ps {
-		pss = append(pss, fmt.Sprintf("<@%s>", p.DiscordID))
-	}
+	go func() {
+		wgStart.Add(1)
+		for _, p := range ps {
+			pss = append(pss, fmt.Sprintf("<@%s>", p.DiscordID))
+		}
+		wgStart.Done()
+	}()
 
 	n := len(ps)
 	if n/2+1 > len(config.Objs.Mains) {
@@ -41,31 +47,44 @@ func GenerateGoals(client *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 	objMainsBrut := config.Objs.Mains
 
-	if !(n == len(config.Objs.Mains)/2 || n == len(config.Objs.Mains)/2+1) {
-		if n%2 == 0 {
-			for i := 0; i < n/2; i++ {
-				r := rand.Intn(len(objMainsBrut))
-				slices.Delete(objMainsBrut, r, r+1)
-			}
-		} else {
-			for i := 0; i < n/2+1; i++ {
-				r := rand.Intn(len(objMainsBrut))
-				slices.Delete(objMainsBrut, r, r+1)
+	var wgGen sync.WaitGroup
+	go func() {
+		wgGen.Add(1)
+		if !(n == len(config.Objs.Mains)/2 || n == len(config.Objs.Mains)/2+1) {
+			if n%2 == 0 {
+				for i := 0; i < n/2; i++ {
+					r := rand.Intn(len(objMainsBrut))
+					slices.Delete(objMainsBrut, r, r+1)
+				}
+			} else {
+				for i := 0; i < n/2+1; i++ {
+					r := rand.Intn(len(objMainsBrut))
+					slices.Delete(objMainsBrut, r, r+1)
+				}
 			}
 		}
-	}
+		wgGen.Done()
+	}()
 
 	objSecs := config.Objs.Secondaries
-	lS := len(config.Objs.Secondaries)
-	for i := 0; i < lS-second; i++ {
-		r := rand.Intn(len(objSecs))
-		slices.Delete(objSecs, r, r+1)
-	}
+	go func() {
+		wgGen.Add(1)
+		lS := len(config.Objs.Secondaries)
+		for i := 0; i < lS-second; i++ {
+			r := rand.Intn(len(objSecs))
+			slices.Delete(objSecs, r, r+1)
+		}
+		wgGen.Done()
+	}()
+
+	wgGen.Wait()
 
 	var objMains []string
 	for _, o := range objMainsBrut {
 		objMains = append(objMains, o.Goal1, o.Goal2)
 	}
+
+	wgStart.Wait()
 
 	hasError := false
 	for _, p := range ps {
