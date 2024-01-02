@@ -111,5 +111,20 @@ func initCommands() {
 			DefaultMemberPermissions: &adminPerm,
 		},
 		Handler: cmd.Add,
+	}, Cmd{
+		ApplicationCommand: discordgo.ApplicationCommand{
+			Name:        "remove",
+			Description: "Remove a player",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "user",
+					Description: "User to remove",
+					Required:    true,
+				},
+			},
+			DefaultMemberPermissions: &adminPerm,
+		},
+		Handler: cmd.Remove,
 	})
 }

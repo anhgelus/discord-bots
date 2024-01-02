@@ -66,6 +66,42 @@ func (p *Player) Save() error {
 	}
 	return nil
 }
+func (p *Player) Remove() error {
+	if len(p.Goals.Secondaries) != config.Objs.Settings.NumberOfSecondaries {
+		return ErrWrongSecondaries
+	}
+	c, _ := Credentials.Get()
+	defer c.Close()
+	key := p.GenKey()
+	err := c.Del(Ctx, key+":main").Err()
+	if err != nil {
+		utils.SendAlert("redis.go - Removing player main", err.Error())
+	}
+	for i := 1; i <= config.Objs.Settings.NumberOfSecondaries; i++ {
+		err = c.Del(Ctx, fmt.Sprintf("%s:sec%d", key, i)).Err()
+		if err != nil {
+			utils.SendAlert(fmt.Sprintf("redis.go - Removing player sec%d", i), err.Error())
+		}
+	}
+	ps, err := c.Get(Ctx, p.GuildID).Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return err
+	}
+	// Hello, World, Today
+	nps := strings.ReplaceAll(ps, ", ", ",") + ","
+	// Hello,World,Today,
+	nps = strings.Replace(nps, p.DiscordID+",", "", 1)
+	// Hello,Today,
+	nps, _ = strings.CutSuffix(nps, ",")
+	// Hello,Today
+	//nps = strings.ReplaceAll(k, ",", ", ")
+	// Hello, Today
+	err = c.Set(Ctx, p.GuildID, nps, 0).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (p *Player) Load() error {
 	if p.GuildID == "" || p.DiscordID == "" {
